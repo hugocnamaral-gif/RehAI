@@ -22,8 +22,8 @@
 --   create table public.copia_utentes as select * from public.utentes;
 --   create table public.copia_sessoes as select * from public.sessoes;
 --
--- Gerado em 2026-10-19T12:27:12.146Z
--- Administrador: support@clinia.live (7da45b31-2f88-4628-be59-e68262854c12)
+-- Gerado em 2026-10-19T13:40:25.128Z
+-- Administrador: support@clinia.live (69faeeed-2e9b-4ea0-bbe2-898024b003a3)
 --
 -- ÁRVORE DE ORIGEM: codigo
 --   Este ficheiro foi gerado pela árvore de código «codigo». Quando existem
@@ -16996,10 +16996,10 @@ declare
   -- Valores preenchidos pelo gerador. Os marcadores são substituídos por
   -- texto simples, sem regex: um regex sobre estas linhas é frágil ao
   -- alinhamento das colunas e já falhou uma vez.
-  v_uid     uuid := '7da45b31-2f88-4628-be59-e68262854c12';
+  v_uid     uuid := '69faeeed-2e9b-4ea0-bbe2-898024b003a3';
   v_email   text := 'support@clinia.live';
   /* O nome da clínica vem de fora — cada cliente tem o seu. */
-  v_clinica_nome text := 'RehAI — ambiente de teste';
+  v_clinica_nome text := 'Clínica Elipse';
   v_clinica uuid;
   v_ok      boolean;
   /* Quantas regras de visibilidade a clínica ficou a ter. Quem as cria é o
