@@ -1524,7 +1524,7 @@ window.CLINIA = window.CLINIA || {};
 (function (C) {
   'use strict';
 
-  C.VERSAO = '2026-10-19 12:27';
+  C.VERSAO = '2026-10-19 13:40';
 
   /* Registo de ecrãs. Cada módulo em ecras/ regista-se aqui com o contrato
      { titulo, rota, render(contentor, parametros) }. O encaminhamento em
@@ -26509,6 +26509,364 @@ window.CLINIA = window.CLINIA || {};
 
 
 /* ==========================================================================
+   ecras/consentimento-papel.js — Consentimento assinado em papel, registado com a digitalização
+   ========================================================================== */
+/* ============================================================================
+   clinia.ai · consentimento-papel — registar um consentimento assinado em papel
+   ============================================================================
+
+   PORQUE ESTE ECRÃ EXISTE
+   ----------------------------------------------------------------------------
+   O consentimento digital (link + código) só funciona quando há tempo, rede e
+   alguém do outro lado. Na vida real, a maioria dos consentimentos assina-se
+   **à mesa, num papel** — e o papel é tão válido como o digital.
+
+   A diferença é que o papel não deixa rasto nenhum até alguém o registar. Sem
+   este ecrã, a clínica tem uma gaveta de folhas assinadas e uma base de dados
+   que não sabe que elas existem. **No dia em que for preciso provar que o
+   utente consentiu, prova-se com a folha — ou não se prova.**
+
+   O ESQUEMA JÁ PREVIA ISTO
+   ----------------------------------------------------------------------------
+   A tabela `consentimentos` foi desenhada com os campos do papel desde o início
+   (`0003_utentes.sql`):
+
+     documento_url   a digitalização assinada (Storage, UE)
+     concedido_por   quem assinou
+     qualidade       próprio · representante legal · tutor
+     testemunha      testemunha
+     registado_por   quem registou na clínica
+
+   **Faltava a interface.** É só isso que este ficheiro acrescenta: não há
+   migração nova, nem tabela nova, nem política nova.
+
+   É UMA ALTERNATIVA, NÃO O CAMINHO PRINCIPAL
+   ----------------------------------------------------------------------------
+   Fica ao lado do consentimento digital, no mesmo grupo do menu e sem destaque.
+   Quem tem o utente à frente usa o papel; quem precisa que ele assine em casa
+   usa o link. **As duas rotas escrevem na mesma tabela** — e é isso que permite
+   responder «que consentimentos tem este utente?» numa só consulta.
+
+   O QUE ESTE ECRÃ NÃO FAZ, E PORQUÊ
+   ----------------------------------------------------------------------------
+   Não carrega o ficheiro. O upload para o Storage precisa de uma política de
+   bucket por clínica, que ainda não existe — e um ecrã que aceita ficheiros sem
+   um sítio seguro para os guardar é pior do que nenhum.
+
+   Registra-se o **caminho** da digitalização (`documento_url`). Enquanto o
+   upload não existir, o caminho é escrito à mão: o sítio onde a clínica guarda
+   a pasta digitalizada. O campo diz isso, para ninguém ficar à espera de um
+   botão que não está lá.
+   ========================================================================== */
+
+(function (C) {
+  'use strict';
+
+  var d = C.dom;
+  var u = C.util;
+
+  C.ecras = C.ecras || {};
+  C.rotulos = C.rotulos || {};
+
+  C.rotulos.consentimento_papel = 'Consentimento em papel';
+
+  /* As qualidades em que alguém pode assinar. Não é um enum da base de dados —
+     `qualidade` é `text` de propósito: a lista real de quem pode consentir por
+     outro é maior do que uma tipologia fechada, e fechá-la obrigaria a uma
+     migração por cada caso novo (tutela, curatela, acompanhante...). */
+  var QUALIDADES = [
+    { valor: 'proprio', rotulo: 'O próprio utente' },
+    { valor: 'representante legal', rotulo: 'Representante legal' },
+    { valor: 'tutor', rotulo: 'Tutor' },
+    { valor: 'acompanhante', rotulo: 'Acompanhante (sem representação legal)' }
+  ];
+
+  C.ecras.consentimento_papel = function (zona) {
+    var estado = {
+      utentes: null,
+      registos: null,
+      erro: null,
+      campos: null,
+      aGravar: false,
+      feito: null
+    };
+
+    return carregar();
+
+    /* -----------------------------------------------------------------------
+       LER: os utentes (para o campo de escolha) e os consentimentos em papel
+       já registados.
+       --------------------------------------------------------------------- */
+    function carregar() {
+      d.substituir(zona, [
+        d.criar('div', { classe: 'vazio', texto: 'A carregar…' })
+      ]);
+
+      var pUtentes = C.dados.ler('utentes', 'utentes', function (q) {
+        return q.select('id, nome, nome_preferido, numero_utente')
+          .eq('clinica_id', C.auth.clinicaId())
+          .order('nome', { ascending: true })
+          .limit(2000);
+      });
+
+      /* Só os que têm digitalização registada — é o que distingue o papel do
+         digital nesta lista. Um consentimento digital aparece no ecrã do
+         utente, não aqui. */
+      var pRegistos = C.dados.ler('consentimentos', 'consentimentos:papel', function (q) {
+        return q.select('id, utente_id, tipo, versao_texto, concedido_em, concedido_por, qualidade, testemunha, documento_url')
+          .eq('clinica_id', C.auth.clinicaId())
+          .not('documento_url', 'is', null)
+          .order('concedido_em', { ascending: false })
+          .limit(30);
+      });
+
+      return Promise.all([pUtentes, pRegistos]).then(function (r) {
+        estado.utentes = r[0] || [];
+        estado.registos = r[1] || [];
+        return desenhar();
+      }).catch(function (erro) {
+        estado.erro = erro;
+        return desenhar();
+      });
+    }
+
+    /* -----------------------------------------------------------------------
+       DESENHAR
+       --------------------------------------------------------------------- */
+    function desenhar() {
+      if (estado.erro) {
+        d.substituir(zona, [C.ui.vazio({
+          icone: '⚠',
+          titulo: 'Não consegui abrir o ecrã',
+          descricao: C.http.mensagemAmigavel(estado.erro)
+        })]);
+        return;
+      }
+
+      var cartaoForm = C.ui.cartao({
+        titulo: 'Registar um consentimento assinado em papel',
+        conteudo: [
+          d.criar('p', {
+            classe: 'ajuda',
+            texto: 'Para quando o utente assina à mesa. O consentimento digital — ' +
+              'link ou código — continua no ecrã próprio. Os dois ficam no mesmo sítio.'
+          }),
+          formulario()
+        ]
+      });
+
+      var cartaoLista = C.ui.cartao({
+        titulo: 'Consentimentos em papel registados',
+        conteudo: lista()
+      });
+
+      d.substituir(zona, [
+        C.ui.paginaTopo({
+          titulo: 'Consentimento em papel',
+          descricao: 'Registar o que já está assinado, para a base de dados saber que existe.'
+        }),
+        cartaoForm,
+        cartaoLista
+      ]);
+    }
+
+    function formulario() {
+      var listaUtentes = d.criar('datalist', { id: 'papel-lista-utentes' });
+      estado.utentes.forEach(function (ut) {
+        listaUtentes.appendChild(d.criar('option', {
+          value: ut.nome_preferido || ut.nome,
+          label: 'Nº ' + ut.numero_utente + ' · ' + ut.nome
+        }));
+      });
+
+      var cUtente = d.campo({
+        nome: 'utente',
+        rotulo: 'Utente',
+        placeholder: 'Escreve o nome e escolhe da lista',
+        autocomplete: 'off',
+        obrigatorio: true,
+        ajuda: 'Tem de ficar ligado ao processo certo — um consentimento no utente errado é um erro que não se corrige.'
+      });
+      cUtente.appendChild(listaUtentes);
+      cUtente.controlo.setAttribute('list', 'papel-lista-utentes');
+
+      var cTipo = d.campo({
+        nome: 'tipo',
+        rotulo: 'Tipo de consentimento',
+        tipo: 'select',
+        opcoes: C.opcoes('consentimento_tipo'),
+        obrigatorio: true
+      });
+
+      var cVersao = d.campo({
+        nome: 'versao_texto',
+        rotulo: 'Versão do texto assinado',
+        valor: 'v1',
+        obrigatorio: true,
+        ajuda: 'A versão que está impressa na folha. É o que permite provar QUE TEXTO foi aceite, e não apenas que houve uma assinatura.'
+      });
+
+      var cQuem = d.campo({
+        nome: 'concedido_por',
+        rotulo: 'Assinado por',
+        placeholder: 'Nome de quem assinou',
+        ajuda: 'Deixa em branco se foi o próprio utente.'
+      });
+
+      var cQualidade = d.campo({
+        nome: 'qualidade',
+        rotulo: 'Em que qualidade',
+        tipo: 'select',
+        valor: 'proprio',
+        opcoes: QUALIDADES
+      });
+
+      var cTestemunha = d.campo({
+        nome: 'testemunha',
+        rotulo: 'Testemunha',
+        placeholder: 'Nome da testemunha, se houver'
+      });
+
+      var cDocumento = d.campo({
+        nome: 'documento_url',
+        rotulo: 'Digitalização (caminho ou ligação)',
+        placeholder: 'ex.: consentimentos/2026/utente-123-assinado.pdf',
+        ajuda: 'Onde está a folha digitalizada. O envio do ficheiro ainda não existe neste ecrã — ' +
+          'guarda-o na pasta da clínica e escreve aqui o caminho.'
+      });
+
+      estado.campos = {
+        utente: cUtente, tipo: cTipo, versao: cVersao,
+        quem: cQuem, qualidade: cQualidade, testemunha: cTestemunha, documento: cDocumento
+      };
+
+      var botao = C.ui.botaoPrimario({
+        texto: estado.aGravar ? 'A gravar…' : 'Registar consentimento',
+        desativado: estado.aGravar,
+        on: gravar
+      });
+
+      var aviso = estado.feito
+        ? C.ui.avisoFaixa({ tipo: 'sucesso', texto: estado.feito })
+        : null;
+
+      var partes = [
+        cUtente, cTipo, cVersao, cQuem, cQualidade, cTestemunha, cDocumento,
+        d.criar('div', { estilo: { marginTop: '14px' } }, [botao])
+      ];
+      if (aviso) partes.unshift(aviso);
+      return d.criar('div', {}, partes);
+    }
+
+    function lista() {
+      if (!estado.registos || !estado.registos.length) {
+        return C.ui.vazio({
+          icone: '📄',
+          titulo: 'Ainda não há consentimentos em papel registados',
+          descricao: 'Quando registares o primeiro, aparece aqui.'
+        });
+      }
+
+      var porId = {};
+      (estado.utentes || []).forEach(function (x) { porId[x.id] = x; });
+
+      return C.ui.tabela({
+        colunas: ['Utente', 'Tipo', 'Versão', 'Assinado por', 'Quando'],
+        linhas: estado.registos.map(function (r) {
+          var ut = porId[r.utente_id];
+          return [
+            ut ? (ut.nome_preferido || ut.nome) : '(utente não listado)',
+            String(r.tipo || '').replace(/_/g, ' '),
+            r.versao_texto || '—',
+            (r.concedido_por || 'o próprio') + (r.qualidade ? ' (' + r.qualidade + ')' : ''),
+            C.tempo ? C.tempo.curto(r.concedido_em) : String(r.concedido_em || '').slice(0, 16).replace('T', ' ')
+          ];
+        })
+      });
+    }
+
+    /* -----------------------------------------------------------------------
+       GRAVAR
+       --------------------------------------------------------------------- */
+    function gravar() {
+      if (estado.aGravar) return;
+
+      var texto = estado.campos.utente.controlo.value;
+      var utente = encontrarUtente(texto);
+
+      if (!utente) {
+        estado.erro = null;
+        estado.feito = null;
+        alerta('Escolhe um utente da lista. Um nome escrito à mão não chega — ' +
+          'tem de ficar ligado ao processo certo.');
+        return;
+      }
+
+      var valores = {
+        tipo: estado.campos.tipo.controlo.value,
+        versao_texto: estado.campos.versao.controlo.value,
+        concedido_por: estado.campos.quem.controlo.value || null,
+        qualidade: estado.campos.qualidade.controlo.value || null,
+        testemunha: estado.campos.testemunha.controlo.value || null,
+        documento_url: estado.campos.documento.controlo.value || null
+      };
+
+      if (!valores.documento_url) {
+        alerta('Escreve o caminho da digitalização. Sem ela, este registo diz que ' +
+          'há uma folha assinada que ninguém consegue encontrar.');
+        return;
+      }
+
+      var registo = Object.assign({
+        clinica_id: C.auth.clinicaId(),
+        utente_id: utente.id,
+        concedido: true
+      }, valores);
+
+      estado.aGravar = true;
+      desenhar();
+
+      C.dados.criar('consentimentos', registo, {
+        um: true,
+        descricao: 'Consentimento em papel (' + valores.tipo + ') para ' +
+          (utente.nome_preferido || utente.nome)
+      }).then(function () {
+        estado.aGravar = false;
+        estado.feito = 'Registado. A folha assinada fica referenciada neste utente.';
+        C.dados.invalidar('consentimentos');
+        return carregar();
+      }).catch(function (erro) {
+        estado.aGravar = false;
+        estado.erro = null;
+        desenhar();
+        alerta('Não consegui gravar: ' + C.http.mensagemAmigavel(erro));
+      });
+    }
+
+    function encontrarUtente(texto) {
+      var alvo = u.normalizar(texto);
+      if (!alvo) return null;
+      var exato = estado.utentes.filter(function (ut) {
+        return u.normalizar(ut.nome) === alvo || u.normalizar(ut.nome_preferido) === alvo;
+      });
+      return exato.length === 1 ? exato[0] : null;
+    }
+
+    function alerta(msg) {
+      var anterior = zona.querySelector('.papel-alerta');
+      if (anterior) anterior.remove();
+      var caixa = d.criar('div', {
+        classe: 'papel-alerta',
+        estilo: { marginTop: '10px' }
+      }, [C.ui.avisoFaixa({ tipo: 'erro', texto: msg })]);
+      var topo = zona.querySelector('.cartao');
+      if (topo) topo.appendChild(caixa);
+    }
+  };
+}(window.CLINIA));
+
+
+/* ==========================================================================
    endoscopia/worklist.js — Endoscopia: lista de exames do dia
    ========================================================================== */
 /* ============================================================================
@@ -29637,7 +29995,18 @@ window.CLINIA = window.CLINIA || {};
       /* Sem `apenasClinico`: quem está ao balcão e ao telefone é a receção, e é
          ela que comunica o código ao utente. Não é um dado clínico — é um código
          que o utente já pediu e precisa de receber. */
-      { rota: 'codigo_consentimento', rotulo: 'Código do consentimento', icone: 'chave' }
+      { rota: 'codigo_consentimento', rotulo: 'Código do consentimento', icone: 'chave' },
+
+      /* O CONSENTIMENTO EM PAPEL — alternativa, não caminho principal.
+         Fica logo a seguir ao código, no mesmo grupo, e sem destaque: quem tem o
+         utente à frente usa o papel, quem precisa que ele assine em casa usa o
+         link. Escrevem os dois na mesma tabela, e é isso que permite responder
+         «que consentimentos tem este utente?» numa só consulta.
+
+         Sem `apenasClinico`: a folha assinada chega ao balcão, e é a receção que
+         a arquiva. Obrigar a um perfil clínico faria com que o papel ficasse por
+         registar — que é exatamente o problema que este ecrã resolve. */
+      { rota: 'consentimento_papel', rotulo: 'Consentimento em papel', icone: 'documento' }
     ]},
     { grupo: 'Documentos', itens: [
       { rota: 'relatorios', rotulo: 'Relatórios', icone: 'relatorios', apenasClinico: true },
