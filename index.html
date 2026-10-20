@@ -1075,7 +1075,6 @@ textarea[aria-invalid='true'] {
 /* ---------------------------------------------------------------------------
    Sessão (SOAP)
    --------------------------------------------------------------------------- */
-.soap-grelha { display: grid; gap: 12px; }
 .soap-campo { border-left: 3px solid var(--linha-forte); padding-left: 11px; }
 .soap-campo.s { border-left-color: #8b5cf6; }
 .soap-campo.o { border-left-color: var(--ciano); }
@@ -1228,6 +1227,91 @@ textarea[aria-invalid='true'] {
   .medicao-controlos { justify-content: flex-end; }
   .medicao-valor { width: 110px; font-size: 16px; }
 }
+
+/* SESSÃO (018): esquerda mede, direita escreve */
+.soap-lista { display: grid; gap: 16px; }
+.soap-campo.observacoes { border-left-color: var(--linha-forte); margin-top: 16px; }
+
+.migalhas-linha { margin-bottom: 6px; }
+.sessao-topo {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.sessao-titulo { display: flex; gap: 12px; align-items: center; }
+.sessao-titulo h1 { margin: 0 0 4px; font-size: 22px; line-height: 1.2; }
+.sessao-icone {
+  width: 40px; height: 40px; border-radius: 50%; flex: none;
+  background:
+    radial-gradient(circle at 32% 30%, var(--vetor-dor) 0 30%, transparent 31%),
+    radial-gradient(circle at 65% 62%, var(--vetor-fun) 0 32%, transparent 33%),
+    var(--indigo);
+}
+.sessao-topo .acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.sessao-utente {
+  display: flex; gap: 12px; align-items: center; margin: 4px 0 12px;
+}
+.sessao-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; font-weight: 700; font-size: 13px;
+  background: var(--ciano-claro); color: var(--ciano-deep);
+}
+.sessao-utente-nome { font-weight: 700; font-size: 16px; color: var(--texto); }
+
+.faixa-estado {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center;
+  padding: 8px 14px; margin-bottom: 12px;
+  border: 1px solid var(--aviso-linha); background: var(--aviso-fundo);
+  border-radius: var(--raio-p); font-size: 13px;
+}
+.estado-item { display: inline-flex; align-items: center; gap: 6px; }
+.estado-item::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.estado-item.estado-ok { color: #047857; }
+.estado-item.estado-alerta { color: #B45309; }
+.estado-item.estado-risco { color: #B91C1C; }
+.estado-item.estado-neutro { color: var(--ardosia); }
+
+.sessao-quando { margin-bottom: 14px; }
+.sessao-colunas { display: grid; gap: 14px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 1100px) { .sessao-colunas { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.sessao-coluna { display: grid; gap: 14px; }
+
+.cartao.sessao-dor { border-top: 3px solid var(--vetor-dor); }
+.cartao.sessao-dor .cartao-topo h3 { color: var(--vetor-dor); }
+.cartao.sessao-intervencao { border-top: 3px solid var(--vetor-mov); }
+.cartao.sessao-registo { border-top: 3px solid var(--ciano); }
+.cartao.sessao-registo .cartao-topo h3 { color: var(--ciano-deep); }
+.cartao.sessao-tempos { border-top: 3px solid var(--vetor-fun); }
+.cartao.sessao-tempos .cartao-topo h3 { color: var(--vetor-fun); }
+.sessao-eva { margin-top: 12px; }
+.sessao-gravar-texto { display: flex; justify-content: flex-end; margin-top: 14px; }
+
+.frases { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.frase {
+  display: inline-flex; align-items: center; border-radius: 999px;
+  background: var(--ciano-claro); border: 1px solid var(--info-linha);
+  font-size: 12.5px; line-height: 1;
+}
+.frase-texto, .frase-tirar {
+  background: none; border: 0; color: var(--ciano-deep); cursor: pointer;
+  font: inherit; padding: 6px 10px;
+}
+.frase-texto:hover { text-decoration: underline; }
+.frase-tirar { padding: 6px 8px 6px 0; opacity: .45; }
+.frase-tirar:hover, .frase-tirar:focus-visible { opacity: 1; color: var(--risco); }
+.frase-guardar {
+  background: transparent; border-style: dashed; border-color: var(--linha-forte);
+  color: var(--texto-suave); padding: 6px 10px; cursor: pointer; font: inherit; font-size: 12.5px;
+}
+.frase-guardar:hover { color: var(--ciano-deep); border-color: var(--ciano); }
+
+.quadros { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.quadro {
+  padding: 10px 12px; border-radius: var(--raio-p);
+  background: var(--aviso-fundo); border: 1px solid var(--aviso-linha);
+}
+.quadro-rotulo { font-size: 12.5px; color: var(--texto-suave); margin-bottom: 4px; }
+.quadro-valor { font-size: 18px; font-weight: 700; color: var(--texto); }
 
 
 /* ===== estilos/toque.css ===== */
@@ -1534,10 +1618,10 @@ window.CLINIA = window.CLINIA || {};
 (function (C) {
   'use strict';
 
-  C.VERSAO = '2026-10-20 20:27';
+  C.VERSAO = '2026-10-20 20:57';
   /* A versão APROVADA que este ficheiro contém (ex.: 2026.10.20-016).
      É esta que o pipeline lê de dentro do index.html para o comparar com o registo. */
-  C.RELEASE = '2026.10.20-017-candidata-4';
+  C.RELEASE = '2026.10.20-018-candidata';
 
   /* Registo de ecrãs. Cada módulo em ecras/ regista-se aqui com o contrato
      { titulo, rota, render(contentor, parametros) }. O encaminhamento em
@@ -8241,6 +8325,133 @@ window.CLINIA = window.CLINIA || {};
   C.ui.estadosDeEpisodioAbertos = ESTADOS_ABERTOS;
 
 })(window.CLINIA);
+
+
+/* ==========================================================================
+   ui/frases.js — Frases da clínica por baixo dos campos clínicos
+   ========================================================================== */
+/* Frases da clínica (tabela frases_clinica, 0047) por baixo de um campo.
+   Sem tabela ou sem acesso, fica vazio: nunca impede o registo. */
+(function (C) {
+  'use strict';
+
+  var d = C.dom;
+  var CHAVE = 'frases:clinica';
+
+  function lerTodas(forcar) {
+    if (forcar) C.dados.invalidar('frases_clinica');
+    return C.dados.ler('frases_clinica', CHAVE, function (q) {
+      q.selecionar('id,campo,texto,usos,criado_por')
+        .eq('clinica_id', C.auth.clinicaId())
+        .is('arquivado_em', null)
+        .ordenar('usos', true)
+        .limite(300);
+    }).catch(function () { return null; });
+  }
+
+  function normal(t) { return String(t || '').trim().replace(/\s+/g, ' ').toLowerCase(); }
+
+  function inserir(controlo, texto) {
+    var atual = controlo.value || '';
+    var sep = '';
+    if (atual.trim()) sep = /[.!?:;]\s*$/.test(atual) ? ' ' : (/\s$/.test(atual) ? '' : '. ');
+    controlo.value = atual + sep + texto;
+    controlo.dispatchEvent(new Event('input', { bubbles: true }));
+    try { controlo.focus(); controlo.selectionStart = controlo.selectionEnd = controlo.value.length; } catch (e) { /* sem foco */ }
+  }
+
+  C.ui = C.ui || {};
+
+  C.ui.frases = function (opcoes) {
+    var campo = opcoes.campo;
+    var controlo = opcoes.controlo;
+    var el = d.criar('div', { classe: 'frases', dados: { campo: campo } });
+    var todas = [];
+
+    function podeArquivar(f) {
+      return C.auth.eAdmin() || String(f.criado_por) === String(C.auth.perfilId());
+    }
+
+    function desenhar() {
+      d.limpar(el);
+      var minhas = todas.filter(function (f) { return f.campo === campo; });
+      minhas.forEach(function (f) {
+        var chip = d.criar('span', { classe: 'frase' }, [
+          d.criar('button', {
+            type: 'button', classe: 'frase-texto', texto: f.texto,
+            title: 'Acrescentar ao texto',
+            on: {
+              click: function () {
+                inserir(controlo, f.texto);
+                if (opcoes.aoAlterar) opcoes.aoAlterar();
+                f.usos = (f.usos || 0) + 1;
+                C.dados.alterar('frases_clinica', f.id, { usos: f.usos }, { um: true }).catch(function () { /* contar usos é acessório */ });
+              }
+            }
+          }),
+          podeArquivar(f) ? d.criar('button', {
+            type: 'button', classe: 'frase-tirar', texto: '×',
+            title: 'Deixar de sugerir esta frase', 'aria-label': 'Deixar de sugerir «' + f.texto + '»',
+            on: {
+              click: function () {
+                C.avisos.confirmar({
+                  titulo: 'Deixar de sugerir esta frase?',
+                  descricao: '«' + f.texto + '» deixa de aparecer para toda a equipa. Os registos onde já foi usada não mudam.',
+                  textoConfirmar: 'Deixar de sugerir'
+                }).then(function (ok) {
+                  if (!ok) return;
+                  return C.dados.alterar('frases_clinica', f.id, { arquivado_em: new Date().toISOString() }, { um: true })
+                    .then(function () {
+                      todas = todas.filter(function (x) { return x.id !== f.id; });
+                      desenhar();
+                    }).catch(function (erro) { C.avisos.deErro(erro, 'Não foi possível retirar a frase.'); });
+                });
+              }
+            }
+          }) : null
+        ]);
+        el.appendChild(chip);
+      });
+
+      el.appendChild(d.criar('button', {
+        type: 'button', classe: 'frase frase-guardar', texto: '+ Guardar como frase',
+        title: 'Guarda o texto selecionado (ou o campo inteiro) para a equipa usar',
+        on: { click: guardar }
+      }));
+    }
+
+    function guardar() {
+      var v = controlo.value || '';
+      var ini = controlo.selectionStart, fim = controlo.selectionEnd;
+      var texto = (typeof ini === 'number' && fim > ini) ? v.slice(ini, fim) : v;
+      texto = texto.trim().replace(/\s+/g, ' ');
+      if (texto.length < 2) { C.avisos.aviso('Escreve (ou seleciona) o texto que queres guardar como frase.'); return; }
+      if (texto.length > 500) { C.avisos.aviso('Uma frase tem no máximo 500 caracteres. Seleciona só a parte que queres guardar.'); return; }
+      if (todas.some(function (f) { return f.campo === campo && normal(f.texto) === normal(texto); })) {
+        C.avisos.aviso('Essa frase já existe.');
+        return;
+      }
+      C.dados.criar('frases_clinica', {
+        clinica_id: C.auth.clinicaId(),
+        campo: campo,
+        texto: texto,
+        criado_por: C.auth.perfilId()
+      }, { um: true, offline: false, descricao: 'Nova frase' }).then(function (nova) {
+        todas.push(Object.assign({ usos: 0 }, nova || {}, { campo: campo, texto: texto, criado_por: C.auth.perfilId() }));
+        desenhar();
+        C.avisos.ok('Frase guardada para a clínica.');
+      }).catch(function (erro) { C.avisos.deErro(erro, 'Não foi possível guardar a frase.'); });
+    }
+
+    lerTodas().then(function (lista) {
+      if (lista === null) return;
+      todas = lista || [];
+      desenhar();
+    });
+
+    return el;
+  };
+}(window.CLINIA));
 
 
 /* ==========================================================================
@@ -17909,8 +18120,19 @@ window.CLINIA = window.CLINIA || {};
   }
 
   function sessaoUtentesDaClinica() {    return C.dados.ler('utentes', 'sessao:utentes', function (q) {
-      q.selecionar('id,nome,numero_utente,episodio_atual_id').ordenar('nome');
+      q.selecionar('id,nome,numero_utente,episodio_atual_id,data_nascimento').ordenar('nome');
     });
+  }
+
+  /* Consentimentos válidos (faixa de estado). Falha → null, nunca bloqueia. */
+  function sessaoConsentimentosDoUtente(utenteId) {
+    if (!utenteId) return Promise.resolve(null);
+    return C.dados.ler('consentimentos', 'sessao:consentimentos:' + utenteId, function (q) {
+      q.selecionar('id,tipo,concedido,revogado_em')
+        .eq('utente_id', utenteId)
+        .eq('concedido', true)
+        .is('revogado_em', null);
+    }).catch(function () { return null; });
   }
 
   function sessaoProfissionaisDaClinica() {
@@ -18252,7 +18474,11 @@ window.CLINIA = window.CLINIA || {};
 
     var alterado = false;
 
-    function marcarAlterado() { alterado = true; }
+    function marcarAlterado() {
+      alterado = true;
+      if (typeof pintarEstado === 'function') pintarEstado();
+    }
+    var pintarEstado = null;   /* definida depois de os campos existirem */
 
     /* -------------------------------------------------------------------------
        RASCUNHO POR GRAVAR
@@ -18319,13 +18545,15 @@ window.CLINIA = window.CLINIA || {};
 
     /* --- SOAP ------------------------------------------------------------- */
     function campoSoap(letra, classe, nome, rotulo, descricao, valor) {
+      var texto = sessaoCampoTexto({ nome: nome, valor: valor, linhas: 3, aoAlterar: marcarAlterado });
       return d.criar('div', { classe: 'soap-campo ' + classe }, [
         sessaoCabecalhoSoap(letra, rotulo, descricao),
-        sessaoCampoTexto({ nome: nome, valor: valor, linhas: 3, aoAlterar: marcarAlterado })
+        texto,
+        C.ui.frases({ campo: nome, controlo: texto.controlo, aoAlterar: marcarAlterado })
       ]);
     }
 
-    var soap = d.criar('div', { classe: 'soap-grelha' }, [
+    var soap = d.criar('div', { classe: 'soap-lista' }, [
       campoSoap('S', 's', 'subjetivo', 'Subjetivo',
         'O que o doente relata, nas palavras dele.', sessao ? sessao.subjetivo : ''),
       campoSoap('O', 'o', 'objetivo', 'Objetivo',
@@ -18767,113 +18995,120 @@ window.CLINIA = window.CLINIA || {};
       });
     }
 
-    /* --- montagem do cartão de referência lateral ------------------------ */
+    /* Montagem (018): esquerda o que se mede, direita o que se escreve. Só muda a disposição. */
     var cartaoReferencia = sessaoCartaoReferencia(anterior, estado.medicoesAnteriores, utente);
 
-    var cartaoNumero = C.ui.cartao({
-      titulo: 'Efeito imediato',
-      corpo: [
-        d.criar('div', {
-          classe: 'ajuda',
-          texto: 'A EVA antes e depois fica gravada como duas medições ligadas a esta sessão. É isso que permite ver quanto de alívio uma técnica dá — e se esse efeito se mantém na sessão seguinte.'
-        }),
-        d.criar('div', { estilo: { marginTop: '10px' } }, [
-          C.ui.dado('N.º da sessão',
-            sessaoNumeroOuNulo(sessao ? sessao.numero_sessao : null) === null
-              ? 'atribuído na gravação'
-              : sessaoNumeroTexto(sessao.numero_sessao))
-        ])
-      ]
+    var botaoGravarTexto = C.ui.botao({
+      texto: sessao ? 'Gravar alterações' : 'Gravar sessão',
+      on: function () { gravar(); }
     });
 
-    var elemento = d.criar('div', { classe: 'grelha g-lateral' }, [
-      d.criar('div', { classe: 'grelha' }, [
-        sessaoCartaoForm('Cabeçalho', d.criar('div', null, [
-          C.ui.listaDados([
-            ['Utente', utente ? utente.nome : '—'],
-            ['Episódio', 'N.º ' + sessaoNumeroTexto(episodio.numero_episodio) + ' · ' +
-              C.rotulo('episodio_motivo', episodio.motivo_principal)],
-            ['Estado do episódio', C.rotulo('episodio_estado', episodio.estado)],
-            ['Início', C.util.formatarData(episodio.data_inicio)]
-          ], 2),
-          C.ui.separador('Quando'),
-          d.linha([campoData, campoInicio, campoFim, campoDuracao]),
-          d.criar('div', { estilo: { marginTop: '10px' } }, [campoProfissional])
-        ])),
+    var quadroDuracao = d.criar('div', { classe: 'quadro-valor' });
+    var quadroEfeito = d.criar('div', { classe: 'quadro-valor' });
+    function quadro(rotulo, valor) {
+      return d.criar('div', { classe: 'quadro' }, [d.criar('div', { classe: 'quadro-rotulo', texto: rotulo }), valor]);
+    }
+    function pintarQuadros() {
+      var dur = campoDuracao.controlo.value;
+      quadroDuracao.textContent = dur ? dur + ' min' : '—';
+      var a = escolhido.evaAntes, b2 = escolhido.evaDepois;
+      quadroEfeito.textContent = (a === null || a === undefined || b2 === null || b2 === undefined)
+        ? '—' : (a - b2 > 0 ? '−' + (a - b2) + ' pontos' : (a - b2 < 0 ? '+' + (b2 - a) + ' pontos' : 'sem alteração'));
+    }
 
-        sessaoCartaoForm('SOAP — registo clínico', d.criar('div', null, [
-          C.ui.info([
-            d.criar('span', {
-              texto: 'O formato SOAP está por confirmar com o clínico. Por isso os quatro campos são opcionais: preenche o que fizer sentido e usa as observações livres para o resto.'
-            })
-          ]),
-          d.criar('div', { estilo: { marginTop: '12px' } }, [soap]),
-          d.criar('div', { estilo: { marginTop: '12px' } }, [campoObservacoes])
-        ])),
+    var faixaEstado = d.criar('div', { classe: 'faixa-estado' });
+    var CAMPOS_REGISTO = ['subjetivo', 'objetivo', 'avaliacao', 'plano'];
+    pintarEstado = function () {
+      if (!elemento) return;
+      var vazios = 0;
+      CAMPOS_REGISTO.forEach(function (n) {
+        var c = d.procurar('[name="' + n + '"]', elemento);
+        if (!c || !String(c.value || '').trim()) vazios++;
+      });
+      if (escolhido.evaAntes === null || escolhido.evaAntes === undefined) vazios++;
+      if (escolhido.evaDepois === null || escolhido.evaDepois === undefined) vazios++;
+      if (!escolhido.resposta && anterior) vazios++;
+      var consent = estado.consentimentos;
+      d.limpar(faixaEstado);
+      d.juntar(faixaEstado, [
+        consent === null || consent === undefined
+          ? d.criar('span', { classe: 'estado-item estado-neutro', texto: 'Consentimento: por confirmar' })
+          : (consent.length
+            ? d.criar('span', { classe: 'estado-item estado-ok', texto: 'Consentimento' })
+            : d.criar('span', { classe: 'estado-item estado-risco', texto: 'Sem consentimento registado' })),
+        d.criar('span', { classe: 'estado-item estado-neutro', texto: 'Motivo: ' + C.rotulo('episodio_motivo', episodio.motivo_principal) }),
+        vazios
+          ? d.criar('span', { classe: 'estado-item estado-alerta', texto: vazios + ' campo(s) por preencher' })
+          : d.criar('span', { classe: 'estado-item estado-ok', texto: 'Registo completo' })
+      ]);
+      pintarQuadros();
+    };
+    campoDuracao.controlo.addEventListener('input', pintarQuadros);
+    campoFim.controlo.addEventListener('input', pintarQuadros);
 
-        sessaoCartaoForm('Resposta e dor', d.criar('div', null, [
-          d.criar('div', { classe: 'campo' }, [
-            d.criar('label', { texto: 'Como está em relação à sessão anterior?' }),
-            d.criar('div', {
-              classe: 'ajuda',
-              texto: 'É a pergunta mais informativa do seguimento: diz mais sobre a direção do quadro do que qualquer valor isolado.'
-            }),
-            segmentoResposta
-          ]),
-          C.ui.separador('EVA — antes e depois'),
-          d.criar('div', { classe: 'grelha g2' }, [
+    var elemento = null;
+    elemento = d.criar('div', { classe: 'sessao-ecra' }, [
+      faixaEstado,
+
+      sessaoCartaoForm('Quando e quem', d.linha([campoData, campoInicio, campoFim, campoDuracao, campoProfissional]), null, 'sessao-quando'),
+
+      d.criar('div', { classe: 'sessao-colunas' }, [
+        d.criar('div', { classe: 'sessao-coluna' }, [
+          sessaoCartaoForm('Dor e medições', d.criar('div', null, [
             d.criar('div', { classe: 'campo' }, [
-              d.criar('span', { classe: 'rotulo', texto: 'EVA antes da intervenção' }),
-              evaAntes
+              d.criar('label', { texto: 'Como está desde a última sessão?' }),
+              segmentoResposta
             ]),
-            d.criar('div', { classe: 'campo' }, [
-              d.criar('span', { classe: 'rotulo', texto: 'EVA depois da intervenção' }),
-              evaDepois
-            ])
-          ]),
-          d.criar('div', { estilo: { marginTop: '8px' } }, [deltaEva])
-        ])),
+            d.criar('div', { classe: 'grelha g2 sessao-eva' }, [
+              d.criar('div', { classe: 'campo' }, [d.criar('span', { classe: 'rotulo', texto: 'EVA antes' }), evaAntes]),
+              d.criar('div', { classe: 'campo' }, [d.criar('span', { classe: 'rotulo', texto: 'EVA depois' }), evaDepois])
+            ]),
+            d.criar('div', { estilo: { marginTop: '8px' } }, [deltaEva]),
+            C.ui.separador('Medições desta sessão'),
+            d.criar('div', { classe: 'ajuda', texto: 'Pré-preenchido com a sessão anterior: altera só o que mudou.' }),
+            d.criar('div', { estilo: { marginTop: '10px' } }, [listaMedicoes])
+          ]), null, 'sessao-dor'),
 
-        sessaoCartaoForm('Intervenção', d.criar('div', null, [
-          C.ui.etiquetaSeccao('Técnicas aplicadas'),
-          d.criar('div', { estilo: { marginTop: '8px' } }, [listaTecnicas]),
-          C.ui.separador('Exercícios realizados'),
-          listaExercicios,
-          C.ui.separador('Carga e progressão'),
-          d.linha([campoIntensidade, campoProgressao]),
-          d.criar('div', { estilo: { marginTop: '10px' } }, [campoCargaNotas])
-        ])),
+          sessaoCartaoForm('Intervenção', d.criar('div', null, [
+            C.ui.etiquetaSeccao('Técnicas aplicadas'),
+            d.criar('div', { estilo: { marginTop: '8px' } }, [listaTecnicas]),
+            C.ui.separador('Exercícios realizados'),
+            listaExercicios,
+            C.ui.separador('Carga e progressão'),
+            d.linha([campoIntensidade, campoProgressao]),
+            d.criar('div', { estilo: { marginTop: '10px' } }, [campoCargaNotas])
+          ]), null, 'sessao-intervencao'),
 
-        sessaoCartaoForm('Adesão ao programa de casa', d.criar('div', null, [
-          C.ui.info([
-            d.criar('b', { texto: 'Para que serve este número: ' }),
-            d.criar('span', {
-              texto: 'se o programa de casa não está a ser feito, o problema pode estar na prescrição — demasiado, mal explicado, sem tempo no dia — e não na técnica. Distinguir execução de prescrição muda a decisão seguinte.'
-            })
-          ]),
-          d.criar('div', { estilo: { marginTop: '12px' } }, [
-            d.criar('div', { classe: 'campo' }, [
-              d.criar('label', { texto: 'Quantas vezes conseguiu fazer o que foi prescrito? (0 = nada, 10 = sempre)' }),
+          cartaoReferencia
+        ]),
+
+        d.criar('div', { classe: 'sessao-coluna' }, [
+          sessaoCartaoForm('Registo da sessão', d.criar('div', null, [
+            soap,
+            d.criar('div', { classe: 'soap-campo observacoes' }, [
+              campoObservacoes,
+              C.ui.frases({ campo: 'observacoes', controlo: campoObservacoes.controlo, aoAlterar: marcarAlterado })
+            ]),
+            d.criar('div', { classe: 'sessao-gravar-texto' }, [botaoGravarTexto])
+          ]), null, 'sessao-registo'),
+
+          sessaoCartaoForm('Tempos, adesão e segurança', d.criar('div', null, [
+            d.criar('div', { classe: 'quadros' }, [
+              quadro('N.º da sessão', d.criar('div', { classe: 'quadro-valor', texto:
+                sessaoNumeroOuNulo(sessao ? sessao.numero_sessao : null) === null ? 'na gravação' : sessaoNumeroTexto(sessao.numero_sessao) })),
+              quadro('Duração', quadroDuracao),
+              quadro('Efeito imediato (EVA)', quadroEfeito)
+            ]),
+            d.criar('div', { classe: 'campo', estilo: { marginTop: '14px' } }, [
+              d.criar('label', { texto: 'Programa de casa — quantas vezes o fez? (0 = nada, 10 = sempre)' }),
               segmentoAdesao
-            ])
-          ])
-        ])),
-
-        sessaoCartaoForm('Segurança', d.criar('div', null, [campoEvento, faixaEvento])),
-
-        sessaoCartaoForm('Medições desta sessão', d.criar('div', null, [
-          C.ui.info([
-            d.criar('b', { texto: 'Pré-preenchido com a sessão anterior. ' }),
-            d.criar('span', {
-              texto: 'Altera só o que mudou: é isto que faz a série temporal existir sem dar trabalho. A medição da sessão é gravada como «seguimento».'
-            })
-          ]),
-          d.criar('div', { estilo: { marginTop: '12px' } }, [listaMedicoes])
-        ]))
-      ]),
-
-      d.criar('div', { classe: 'grelha' }, [cartaoReferencia, cartaoNumero])
+            ]),
+            d.criar('div', { estilo: { marginTop: '12px' } }, [campoEvento, faixaEvento])
+          ]), null, 'sessao-tempos')
+        ])
+      ])
     ]);
+    pintarEstado();
 
     return {
       elemento: elemento,
@@ -18949,7 +19184,8 @@ window.CLINIA = window.CLINIA || {};
         sessaoMedicoesDoEpisodio(episodioId),
         sessaoAtosDoEpisodio(episodioId),
         sessaoPlanosDoEpisodio(episodioId),
-        sessaoTiposMedicao()
+        sessaoTiposMedicao(),
+        sessaoConsentimentosDoUtente(utenteId)
       ]).then(function (extra) {
         var episodio = extra[0] || { id: episodioId };
         var lista = extra[1] || [];
@@ -18957,6 +19193,7 @@ window.CLINIA = window.CLINIA || {};
         var atos = extra[3] || [];
         var planos = extra[4] || [];
         var tiposMedicao = extra[5] || [];
+        var consentimentos = extra[6];   /* null = não foi possível saber */
 
         if (!episodio.utente_id) episodio.utente_id = utenteId;
         if (!episodio.episodio) episodio.episodio = episodioId;
@@ -19000,50 +19237,49 @@ window.CLINIA = window.CLINIA || {};
              215 grandezas, todas as semanas. */
           medicoesSerie: sessaoMedicoesDeReferencia(medicoes),
           catalogoMedicao: tiposMedicao,
+          consentimentos: consentimentos,
           aoVoltar: function () { C.app.navegar('sessoes', { episodio: episodioId }); }
         });
 
+        var idade = utente && utente.data_nascimento ? C.util.idade(utente.data_nascimento) : null;
         d.substituir(el, [
-          C.ui.paginaTopo({
-            titulo: sessao ? 'Sessão de tratamento' : 'Nova sessão',
-            sub: sessaoJuntar([
-              utente ? utente.nome : '—',
-              'Episódio ' + sessaoNumeroTexto(episodio.numero_episodio) + ' · ' +
-                C.rotulo('episodio_motivo', episodio.motivo_principal),
-              sessao
-                ? 'Sessão n.º ' + sessaoNumeroTexto(sessao.numero_sessao)
-                : 'Sessão nova'
-            ]),
-            migalhas: C.ui.migalhas([
-              { rotulo: 'Sessões', acao: function () { C.app.navegar('sessoes'); } },
-              sessaoMigalha('utentes', utente ? utente.nome : 'utente', { id: utenteId }),
-              sessaoMigalha('episodios', 'Episódio ' + sessaoNumeroTexto(episodio.numero_episodio), { id: episodioId })
-            ]),
-            acoes: [
-              C.ui.botaoFantasma({
-                texto: 'Evolução',
-                icone: 'evolucao',
-                on: function () { C.app.navegar('evolucao', { episodio: episodioId }); }
-              })
-            ]
-          }),
+          d.criar('div', { classe: 'migalhas-linha' }, [d.criar('div', { classe: 'migalhas' }, C.ui.migalhas([
+            { rotulo: 'Sessões', acao: function () { C.app.navegar('sessoes'); } },
+            sessaoMigalha('utentes', utente ? utente.nome : 'utente', { id: utenteId }),
+            sessaoMigalha('episodios', 'Episódio ' + sessaoNumeroTexto(episodio.numero_episodio), { id: episodioId })
+          ]))]),
 
-          !sessao
-            ? C.ui.info([
-                d.criar('b', { texto: 'O número da sessão é atribuído pela base de dados. ' }),
-                d.criar('span', {
-                  texto: 'Não é preciso escolhê-lo: fica calculado pela posição no episódio, o que evita duplicados quando duas pessoas registam ao mesmo tempo.'
-                })
+          d.criar('div', { classe: 'sessao-topo' }, [
+            d.criar('div', { classe: 'sessao-titulo' }, [
+              d.criar('div', { classe: 'sessao-icone', 'aria-hidden': 'true' }),
+              d.criar('div', null, [
+                d.criar('h1', { texto: sessao ? 'Sessão n.º ' + sessaoNumeroTexto(sessao.numero_sessao) : 'Nova sessão' }),
+                C.ui.badge(sessao ? 'Gravada' : 'Em curso', sessao ? 'ok' : 'info')
               ])
-            : null,
+            ]),
+            d.criar('div', { classe: 'acoes' }, [
+              formulario.botaoGravar,
+              formulario.botaoCopiar,
+              C.ui.botaoFantasma({
+                texto: 'Evolução', icone: 'evolucao',
+                on: function () { C.app.navegar('evolucao', { episodio: episodioId }); }
+              }),
+              formulario.botaoCancelar
+            ])
+          ]),
+          d.criar('div', { classe: 'sessao-utente' }, [
+            d.criar('div', { classe: 'sessao-avatar', texto: C.util.iniciais ? C.util.iniciais(utente ? utente.nome : '') : (utente && utente.nome ? utente.nome.split(/\s+/).map(function (x) { return x.charAt(0); }).slice(0, 2).join('').toUpperCase() : '—') }),
+            d.criar('div', null, [
+              d.criar('div', { classe: 'sessao-utente-nome', texto: (utente ? utente.nome : '—') + (utente && utente.numero_utente ? ' · ' + utente.numero_utente : '') }),
+              d.criar('div', { classe: 'ajuda', texto: sessaoJuntar([
+                idade !== null && idade !== undefined ? idade + ' anos' : null,
+                'Episódio ' + sessaoNumeroTexto(episodio.numero_episodio) + ' · ' + C.rotulo('episodio_motivo', episodio.motivo_principal),
+                C.rotulo('episodio_estado', episodio.estado)
+              ], ' · ') })
+            ])
+          ]),
 
-          formulario.elemento,
-
-          d.criar('div', { classe: 'cartao-rodape' }, [
-            formulario.botaoGravar,
-            formulario.botaoCopiar,
-            formulario.botaoCancelar
-          ])
+          formulario.elemento
         ]);
 
         C.dom.focarPrimeiro(el);
