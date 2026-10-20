@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light">
-<meta name="description" content="clinIA — gestão clínica">
+<meta name="description" content="TESTE RehAI — gestão clínica">
 <meta name="theme-color" content="#1E1B4B">
 <!--
   PWA sem ficheiros externos: o manifest e o service worker são gerados em
   runtime a partir de Blobs (ver src/app.js). Assim o ficheiro único continua a
   ser único — não há manifest.json nem sw.js que possa faltar no deploy.
 -->
-<title>clinIA</title>
+<title>TESTE RehAI</title>
 <style>
 /* ===== estilos/base.css ===== */
 /* ============================================================================
@@ -1442,7 +1442,7 @@ textarea[aria-invalid='true'] {
       <circle cx="24" cy="24" r="18.5" fill="none" stroke="#06B6D4" stroke-width="1.4"/>
       <path d="M18 15V33M30 15V33M18 24H30" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
     </svg>
-    <div class="arranque-nome">clinIA</div>
+    <div class="arranque-nome">TESTE RehAI</div>
     <div class="arranque-estado" id="arranque-estado">A iniciar…</div>
   </div>
 </div>
@@ -1462,7 +1462,7 @@ textarea[aria-invalid='true'] {
         <circle cx="24" cy="24" r="18.5" fill="none" stroke="#06B6D4" stroke-width="1.4"/>
         <path d="M18 15V33M30 15V33M18 24H30" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
       </svg>
-      <span class="topo-titulo" id="topo-titulo">clinIA</span>
+      <span class="topo-titulo" id="topo-titulo">TESTE RehAI</span>
     </div>
     <div class="topo-meio" id="topo-meio"></div>
     <div class="topo-fim">
@@ -1491,11 +1491,22 @@ textarea[aria-invalid='true'] {
 
 <noscript>
   <div class="sem-js">
-    <h1>clinIA</h1>
+    <h1>TESTE RehAI</h1>
     <p>Esta aplicação precisa de JavaScript ativo. Os dados clínicos não são renderizados no servidor, por isso não há versão sem script.</p>
   </div>
 </noscript>
 
+<script>
+/* Ligação ao Supabase, embutida pelo build a partir do ambiente.
+   Chave PÚBLICA: o que protege os dados é o RLS na base de dados.
+   Nunca colocar aqui a chave de serviço (sb_secret_ / service_role). */
+window.CLINIA_CONFIG = {
+  supabaseUrl: "https://adkhmyyqrmeoctqhphki.supabase.co",
+  supabaseAnonKey: "sb_publishable_ICWCy8RXT6WJY4y6sp_-rQ_gXUWDbA3",
+  clinicaNome: "TESTE RehAI",
+  demonstracao: false
+};
+</script>
 <script>
 (function(){
 'use strict';
@@ -1513,7 +1524,10 @@ window.CLINIA = window.CLINIA || {};
 (function (C) {
   'use strict';
 
-  C.VERSAO = '2026-10-20 12:48';
+  C.VERSAO = '2026-10-20 16:40';
+  /* A versão APROVADA que este ficheiro contém (ex.: 2026.10.20-016).
+     É esta que o pipeline lê de dentro do index.html para o comparar com o registo. */
+  C.RELEASE = '2026.10.20-017-candidata-2';
 
   /* Registo de ecrãs. Cada módulo em ecras/ regista-se aqui com o contrato
      { titulo, rota, render(contentor, parametros) }. O encaminhamento em
@@ -2849,6 +2863,13 @@ window.CLINIA = window.CLINIA || {};
   };
   Consulta.prototype.is = function (coluna, valor) {
     this.filtros.push(encodeURIComponent(coluna) + '=is.' + (valor === null ? 'null' : valor));
+    return this;
+  };
+  /* `coluna IS NOT NULL`. O ecrã do consentimento em papel chamava
+     `.not('documento_url', 'is', null)` — um método que não existe aqui — e
+     rebentava com TypeError antes de pedir fosse o que fosse ao servidor. */
+  Consulta.prototype.naoNulo = function (coluna) {
+    this.filtros.push(encodeURIComponent(coluna) + '=not.is.null');
     return this;
   };
   Consulta.prototype.em = function (coluna, valores) {
@@ -5921,7 +5942,10 @@ window.CLINIA = window.CLINIA || {};
      que a app usa (eq, neq, is, in, gte, lte, ilike). Não é um motor completo,
      e não precisa de ser. */
   function corresponde(registo, filtro) {
-    var m = decodeURIComponent(filtro).match(/^([a-z_0-9]+)=([a-z]+)\.(.*)$/i);
+    var dec = decodeURIComponent(filtro);
+    var naoNulo = dec.match(/^([a-z_0-9]+)=not\.is\.null$/i);
+    if (naoNulo) return registo[naoNulo[1]] !== null && registo[naoNulo[1]] !== undefined;
+    var m = dec.match(/^([a-z_0-9]+)=([a-z]+)\.(.*)$/i);
     if (!m) return true;
     var campo = m[1];
     var operador = m[2];
@@ -8109,7 +8133,7 @@ window.CLINIA = window.CLINIA || {};
     return C.dados.ler('episodios', 'escolher-episodio:' + estados.join(','), function (q) {
       q.selecionar('id,utente_id,numero_episodio,motivo_principal,especialidade,estado,data_inicio')
         .eq('clinica_id', C.auth.clinicaId())
-        .in('estado', estados)
+        .em('estado', estados)   /* era .in(): não existe no construtor — TypeError */
         .ordenar('data_inicio', true)
         .limite(limite);
     }).then(function (episodios) {
@@ -8129,7 +8153,7 @@ window.CLINIA = window.CLINIA || {};
       });
 
       return C.dados.ler('utentes', 'escolher-episodio:utentes', function (q) {
-        q.selecionar('id,nome,nome_preferido').in('id', ids);
+        q.selecionar('id,nome,nome_preferido').em('id', ids);
       }).then(function (utentes) {
         var nomePorId = {};
         (utentes || []).forEach(function (x) {
@@ -9879,7 +9903,7 @@ window.CLINIA = window.CLINIA || {};
                    'alertas,alergias,episodio_atual_id,ativo,arquivado_em,arquivado_motivo,created_at')
         .eq('clinica_id', C.auth.clinicaId());
 
-      if (filtro === 'arquivados') q.not('arquivado_em', null);
+      if (filtro === 'arquivados') q.naoNulo('arquivado_em');   /* era q.not(): não existe — TypeError */
       else q.is('arquivado_em', null);
 
       if (procura) q.ilike('nome', procura);
@@ -20657,15 +20681,6 @@ window.CLINIA = window.CLINIA || {};
       return null;
     }
 
-    function valores() {
-      var v = {};
-      campos.forEach(function (campo) {
-        if (!campo.controlo || !campo.controlo.name) return;
-        v[campo.controlo.name] = campo.controlo.value === '' ? null : campo.controlo.value;
-      });
-      return v;
-    }
-
     relatoriosCarregarModelos(null);
 
     return C.avisos.formulario({
@@ -20675,8 +20690,13 @@ window.CLINIA = window.CLINIA || {};
       textoConfirmar: 'Guardar rascunho',
       campos: campos,
       validar: validar,
-      aoGuardar: function () {
-        return aoGuardar(valores());
+      /* Os valores vêm do DIÁLOGO, que encontra os campos dentro das linhas
+         (`acharCampos`). O `valores()` local só via o primeiro nível — e o
+         utente, o episódio, o tipo e as datas estão dentro de `d.linha`. Saíam
+         todos a null e a base de dados recusava: «null value in column
+         "utente_id"». */
+      aoGuardar: function (v) {
+        return aoGuardar(v);
       }
     });
   }
@@ -20765,12 +20785,10 @@ window.CLINIA = window.CLINIA || {};
       textoConfirmar: 'Gravar alterações',
       campos: campos,
       validar: validar,
-      aoGuardar: function () {
-        var v = {};
-        campos.forEach(function (campo) {
-          if (!campo.controlo.name) return;
-          v[campo.controlo.name] = campo.controlo.value === '' ? null : campo.controlo.value;
-        });
+      aoGuardar: function (recebidos) {
+        /* Os valores do DIÁLOGO (ver o formulário de criação: o mesmo erro de
+           recolha local deixava campos a null). */
+        var v = Object.assign({}, recebidos);
         delete v.modelo;
         v.titulo = String(v.titulo || '').trim();
         v.data_relatorio = registo.data_relatorio;
@@ -25285,7 +25303,7 @@ window.CLINIA = window.CLINIA || {};
          Diagnóstico
          --------------------------------------------------------------------- */
       var diagnosticos = [
-        ['Versão da aplicação', C.VERSAO],
+        ['Versão da aplicação', C.RELEASE + ' (build ' + C.VERSAO + ')'],
         ['Chave anon configurada', C.configValida() ? 'sim' : 'não — falta configurar'],
         ['Modo demonstração', C.config.demonstracao ? 'ativo' : 'inativo'],
         ['Registos na fila local', String(C.dados.pendentes())],
@@ -26623,21 +26641,23 @@ window.CLINIA = window.CLINIA || {};
       ]);
 
       var pUtentes = C.dados.ler('utentes', 'utentes', function (q) {
-        return q.select('id, nome, nome_preferido, numero_utente')
+        /* Construtor em PORTUGUÊS (selecionar/ordenar/limite) — ver CONTRATO.md.
+           Estava em inglês (select/order/limit): TypeError, ecrã em branco. */
+        return q.selecionar('id,nome,nome_preferido,numero_utente')
           .eq('clinica_id', C.auth.clinicaId())
-          .order('nome', { ascending: true })
-          .limit(2000);
+          .ordenar('nome', false)
+          .limite(2000);
       });
 
       /* Só os que têm digitalização registada — é o que distingue o papel do
          digital nesta lista. Um consentimento digital aparece no ecrã do
          utente, não aqui. */
       var pRegistos = C.dados.ler('consentimentos', 'consentimentos:papel', function (q) {
-        return q.select('id, utente_id, tipo, versao_texto, concedido_em, concedido_por, qualidade, testemunha, documento_url')
+        return q.selecionar('id,utente_id,tipo,versao_texto,concedido_em,concedido_por,qualidade,testemunha,documento_url')
           .eq('clinica_id', C.auth.clinicaId())
-          .not('documento_url', 'is', null)
-          .order('concedido_em', { ascending: false })
-          .limit(30);
+          .naoNulo('documento_url')
+          .ordenar('concedido_em', true)
+          .limite(30);
       });
 
       return Promise.all([pUtentes, pRegistos]).then(function (r) {
