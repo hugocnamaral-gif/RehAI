@@ -679,6 +679,9 @@ table.tabela .acoes { text-align: right; white-space: nowrap; }
   background: rgba(11, 19, 43, .5);
   display: grid; place-items: center; padding: 18px;
 }
+/* Rede de segurança: sem um diálogo nosso lá dentro, o fundo não aparece —
+   mesmo que alguém (uma extensão do browser) deixe o contentor visível. */
+.dialogos:not(:has(> .dialogo)) { display: none; }
 /* ---------------------------------------------------------------------------
    DIÁLOGO — cabeçalho e rodapé fixos, só o miolo desliza
    ---------------------------------------------------------------------------
@@ -1531,10 +1534,10 @@ window.CLINIA = window.CLINIA || {};
 (function (C) {
   'use strict';
 
-  C.VERSAO = '2026-10-20 16:54';
+  C.VERSAO = '2026-10-20 20:27';
   /* A versão APROVADA que este ficheiro contém (ex.: 2026.10.20-016).
      É esta que o pipeline lê de dentro do index.html para o comparar com o registo. */
-  C.RELEASE = '2026.10.20-017-candidata-3';
+  C.RELEASE = '2026.10.20-017-candidata-4';
 
   /* Registo de ecrãs. Cada módulo em ecras/ regista-se aqui com o contrato
      { titulo, rota, render(contentor, parametros) }. O encaminhamento em
@@ -7789,7 +7792,13 @@ window.CLINIA = window.CLINIA || {};
 
     if (raiz && raiz.parentNode === contentorDialogos) {
       raiz.remove();
-      if (!contentorDialogos.childNodes.length) contentorDialogos.hidden = true;
+      /* Contam-se só os NOSSOS diálogos (.dialogo), e não «qualquer filho».
+         Extensões do browser (o Grammarly, visto no TESTE a 2026-10-20) põem
+         elementos seus dentro do contentor junto às caixas de texto. Com
+         `childNodes.length`, esse elemento impedia de esconder o fundo; um
+         instante depois a extensão tirava-o, e o ecrã ficava escuro e bloqueado
+         com o contentor vazio — até recarregar a página. */
+      if (!contentorDialogos.querySelector('.dialogo')) contentorDialogos.hidden = true;
       return;
     }
 
