@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light">
-<meta name="description" content="Clínica Elipse — gestão clínica">
+<meta name="description" content="TESTE RehAI — gestão clínica">
 <meta name="theme-color" content="#1E1B4B">
 <!--
   PWA sem ficheiros externos: o manifest e o service worker são gerados em
   runtime a partir de Blobs (ver src/app.js). Assim o ficheiro único continua a
   ser único — não há manifest.json nem sw.js que possa faltar no deploy.
 -->
-<title>Clínica Elipse</title>
+<title>TESTE RehAI</title>
 <style>
 /* ===== estilos/base.css ===== */
 /* ============================================================================
@@ -1536,7 +1536,7 @@ textarea[aria-invalid='true'] {
       <circle cx="24" cy="24" r="18.5" fill="none" stroke="#06B6D4" stroke-width="1.4"/>
       <path d="M18 15V33M30 15V33M18 24H30" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
     </svg>
-    <div class="arranque-nome">Clínica Elipse</div>
+    <div class="arranque-nome">TESTE RehAI</div>
     <div class="arranque-estado" id="arranque-estado">A iniciar…</div>
   </div>
 </div>
@@ -1556,7 +1556,7 @@ textarea[aria-invalid='true'] {
         <circle cx="24" cy="24" r="18.5" fill="none" stroke="#06B6D4" stroke-width="1.4"/>
         <path d="M18 15V33M30 15V33M18 24H30" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
       </svg>
-      <span class="topo-titulo" id="topo-titulo">Clínica Elipse</span>
+      <span class="topo-titulo" id="topo-titulo">TESTE RehAI</span>
     </div>
     <div class="topo-meio" id="topo-meio"></div>
     <div class="topo-fim">
@@ -1585,7 +1585,7 @@ textarea[aria-invalid='true'] {
 
 <noscript>
   <div class="sem-js">
-    <h1>Clínica Elipse</h1>
+    <h1>TESTE RehAI</h1>
     <p>Esta aplicação precisa de JavaScript ativo. Os dados clínicos não são renderizados no servidor, por isso não há versão sem script.</p>
   </div>
 </noscript>
@@ -1595,9 +1595,9 @@ textarea[aria-invalid='true'] {
    Chave PÚBLICA: o que protege os dados é o RLS na base de dados.
    Nunca colocar aqui a chave de serviço (sb_secret_ / service_role). */
 window.CLINIA_CONFIG = {
-  supabaseUrl: "https://msaxsdjjibqdfrlpcptr.supabase.co",
-  supabaseAnonKey: "sb_publishable_jXFhEQeo-6vgYVMq1Pcjsw_v-emgDow",
-  clinicaNome: "Clínica Elipse",
+  supabaseUrl: "https://adkhmyyqrmeoctqhphki.supabase.co",
+  supabaseAnonKey: "sb_publishable_ICWCy8RXT6WJY4y6sp_-rQ_gXUWDbA3",
+  clinicaNome: "TESTE RehAI",
   demonstracao: false
 };
 </script>
@@ -1618,10 +1618,10 @@ window.CLINIA = window.CLINIA || {};
 (function (C) {
   'use strict';
 
-  C.VERSAO = '2026-10-20 21:46';
+  C.VERSAO = '2026-10-20 20:57';
   /* A versão APROVADA que este ficheiro contém (ex.: 2026.10.20-016).
      É esta que o pipeline lê de dentro do index.html para o comparar com o registo. */
-  C.RELEASE = '2026.10.20-019';
+  C.RELEASE = '2026.10.20-018-candidata';
 
   /* Registo de ecrãs. Cada módulo em ecras/ regista-se aqui com o contrato
      { titulo, rota, render(contentor, parametros) }. O encaminhamento em
