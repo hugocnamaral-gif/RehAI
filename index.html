@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light">
-<meta name="description" content="Clínica Elipse — gestão clínica">
+<meta name="description" content="clinIA — gestão clínica">
 <meta name="theme-color" content="#1E1B4B">
 <!--
   PWA sem ficheiros externos: o manifest e o service worker são gerados em
   runtime a partir de Blobs (ver src/app.js). Assim o ficheiro único continua a
   ser único — não há manifest.json nem sw.js que possa faltar no deploy.
 -->
-<title>Clínica Elipse</title>
+<title>clinIA</title>
 <style>
 /* ===== estilos/base.css ===== */
 /* ============================================================================
@@ -1442,7 +1442,7 @@ textarea[aria-invalid='true'] {
       <circle cx="24" cy="24" r="18.5" fill="none" stroke="#06B6D4" stroke-width="1.4"/>
       <path d="M18 15V33M30 15V33M18 24H30" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
     </svg>
-    <div class="arranque-nome">Clínica Elipse</div>
+    <div class="arranque-nome">clinIA</div>
     <div class="arranque-estado" id="arranque-estado">A iniciar…</div>
   </div>
 </div>
@@ -1462,7 +1462,7 @@ textarea[aria-invalid='true'] {
         <circle cx="24" cy="24" r="18.5" fill="none" stroke="#06B6D4" stroke-width="1.4"/>
         <path d="M18 15V33M30 15V33M18 24H30" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
       </svg>
-      <span class="topo-titulo" id="topo-titulo">Clínica Elipse</span>
+      <span class="topo-titulo" id="topo-titulo">clinIA</span>
     </div>
     <div class="topo-meio" id="topo-meio"></div>
     <div class="topo-fim">
@@ -1491,22 +1491,11 @@ textarea[aria-invalid='true'] {
 
 <noscript>
   <div class="sem-js">
-    <h1>Clínica Elipse</h1>
+    <h1>clinIA</h1>
     <p>Esta aplicação precisa de JavaScript ativo. Os dados clínicos não são renderizados no servidor, por isso não há versão sem script.</p>
   </div>
 </noscript>
 
-<script>
-/* Ligação ao Supabase, embutida pelo build a partir do ambiente.
-   Chave PÚBLICA: o que protege os dados é o RLS na base de dados.
-   Nunca colocar aqui a chave de serviço (sb_secret_ / service_role). */
-window.CLINIA_CONFIG = {
-  supabaseUrl: "https://msaxsdjjibqdfrlpcptr.supabase.co",
-  supabaseAnonKey: "sb_publishable_jXFhEQeo-6vgYVMq1Pcjsw_v-emgDow",
-  clinicaNome: "Clínica Elipse",
-  demonstracao: false
-};
-</script>
 <script>
 (function(){
 'use strict';
@@ -1524,7 +1513,7 @@ window.CLINIA = window.CLINIA || {};
 (function (C) {
   'use strict';
 
-  C.VERSAO = '2026-10-19 13:40';
+  C.VERSAO = '2026-10-20 12:48';
 
   /* Registo de ecrãs. Cada módulo em ecras/ regista-se aqui com o contrato
      { titulo, rota, render(contentor, parametros) }. O encaminhamento em
@@ -26358,11 +26347,24 @@ window.CLINIA = window.CLINIA || {};
 
       return C.dados.ler('vw_consentimento_pedidos', 'consentimento:codigos', function (q) {
         /* Só os que ainda podem ser assinados. Um pedido já assinado não tem
-           código para comunicar, e mostrá-lo seria ruído. */
-        return q.select('*')
-          .in('estado', ['enviado', 'visto', 'otp_enviado'])
-          .order('criado_em', { ascending: false })
-          .limit(50);
+           código para comunicar, e mostrá-lo seria ruído.
+
+           **EM PORTUGUÊS, NÃO EM INGLÊS.**
+           O construtor de consultas deste projeto tem `selecionar` / `em` /
+           `ordenar` / `limite` — não `select` / `in` / `order` / `limit`.
+
+           Chamar os nomes ingleses rebentava com `q.select is not a function`
+           ANTES de chegar ao filtro, à ordenação e ao limite: **o ecrã não
+           filtrava nada, não ordenava nada e trazia tudo**, e o erro aparecia
+           como «Sem ligação ao servidor». O teste dizia-o desde o início, na
+           linha 161, e eu passei por lá várias vezes sem ler. */
+        return q.selecionar('*')
+          .em('estado', ['enviado', 'visto', 'otp_enviado'])
+          /* `true` é descendente — do mais recente para o mais antigo. O
+             construtor deste projeto recebe um booleano; passar
+             `{ ascending: false }` dava «sem ordenação». */
+          .ordenar('criado_em', true)
+          .limite(50);
       }).then(function (linhas) {
         estado.pedidos = linhas || [];
         return desenhar();
@@ -26504,6 +26506,24 @@ window.CLINIA = window.CLINIA || {};
   }
 
   void mostrarCodigo;
+
+  /* A FORMA QUE O APP ESPERA
+     ------------------------------------------------------------------------
+     O `app.mostrar` chama `ecra.render(zona, parametros)`. Acima, este ecrã
+     está escrito como FUNÇÃO — e uma função não tem `.render`. O browser dava
+
+       TypeError: ecra.render is not a function
+
+     e a app mostrava «Não foi possível abrir este ecrã — Sem ligação ao
+     servidor», que manda procurar na rede. **O problema era de forma.**
+
+     Uma função JÁ É um objecto: não é preciso trocá-la. Acrescenta-se-lhe
+     `render`, e o ecrã passa a funcionar das duas maneiras — pela app
+     (`ecra.render(...)`) e directamente (`ecra(zona)`), que é como os testes
+     o chamam. **Nenhuma linha do corpo foi alterada.** */
+  C.ecras.codigo_consentimento.render = C.ecras.codigo_consentimento;
+  C.ecras.codigo_consentimento.titulo = 'Código do consentimento';
+  C.ecras.codigo_consentimento.rota = 'codigo_consentimento';
 
 })(window.CLINIA);
 
@@ -26863,6 +26883,21 @@ window.CLINIA = window.CLINIA || {};
       if (topo) topo.appendChild(caixa);
     }
   };
+
+  /* A FORMA QUE O APP ESPERA
+     ------------------------------------------------------------------------
+     O `app.mostrar` chama `ecra.render(zona, parametros)`; este ecrã está
+     escrito como FUNÇÃO e uma função não tem `.render` — o browser dava
+     `TypeError: ecra.render is not a function` e a app mostrava «Sem ligação
+     ao servidor», que manda procurar na rede.
+
+     Uma função JÁ É um objecto. Acrescenta-se-lhe `render` e o ecrã funciona
+     das duas maneiras: pela app (`ecra.render(...)`) e directamente
+     (`ecra(zona)`), que é como os testes o chamam. */
+  C.ecras.consentimento_papel.render = C.ecras.consentimento_papel;
+  C.ecras.consentimento_papel.titulo = 'Consentimento em papel';
+  C.ecras.consentimento_papel.rota = 'consentimento_papel';
+
 }(window.CLINIA));
 
 
