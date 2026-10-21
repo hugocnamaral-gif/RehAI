@@ -1420,7 +1420,7 @@ window.CLINIA = window.CLINIA || {};
 (function (C) {
   'use strict';
 
-  C.VERSAO = '2026-10-21 14:58';
+  C.VERSAO = '2026-10-21 15:55';
 
   C.RELEASE = '2026.10.21-023-candidata';
 
@@ -6270,7 +6270,7 @@ window.CLINIA = window.CLINIA || {};
         var n = String(notas.controlo.value || '').trim();
         d.limpar(erro);
         var problema = null;
-        if (b.length && resultado === 'sem_alertas') problema = 'Há bandeiras vermelhas assinaladas: o resultado não pode ser «Sem alertas».';
+        if (b.length && resultado === 'sem_alertas') problema = 'Bandeira vermelha assinalada (' + b.map(function (c) { return rotuloDe(BANDEIRAS, c); }).join('; ') + '): o resultado não pode ser «Sem alertas». Escolhe «Vigiar» ou «Referenciar», ou desmarca-a.';
         else if (resultado === 'referenciar' && n.length < 3) problema = 'Escreve para onde e porquê o utente é referenciado.';
         if (problema) { erro.appendChild(C.ui.avisoFaixa([d.criar('div', { texto: problema })])); return false; }
         return C.dados.criar('rastreios_seguranca', {
@@ -15231,7 +15231,7 @@ window.CLINIA = window.CLINIA || {};
 
   function sessaoProfissionaisDaClinica() {
     return C.dados.ler('profissionais', 'sessao:profissionais', function (q) {
-      q.selecionar('id,nome,perfil').ordenar('nome');
+      q.selecionar('id,nome,perfil,perfil_id').ordenar('nome');
     });
   }
 
@@ -15534,6 +15534,11 @@ window.CLINIA = window.CLINIA || {};
     var anterior = estado.anterior;
 
     function perfilDe(id) { var p = profissionais.filter(function (x) { return x.id === id; })[0]; return p ? p.perfil : null; }
+    function meuProfissionalId() {
+      var eu = C.auth.perfilId && C.auth.perfilId();
+      var p = profissionais.filter(function (x) { return eu && x.perfil_id === eu; })[0];
+      return p ? p.id : null;
+    }
     var valencia = (sessao && sessao.valencia) ||
       C.valenciaDoPerfil(perfilDe(sessao ? sessao.profissional_id : episodio.profissional_principal_id) || (C.auth.contexto && C.auth.contexto.perfil));
     var valenciaEscolhida = !!(sessao && sessao.valencia);
@@ -15595,7 +15600,8 @@ window.CLINIA = window.CLINIA || {};
       opcoes: [{ valor: '', rotulo: '—' }].concat(profissionais.map(function (p) {
         return { valor: p.id, rotulo: p.nome };
       })),
-      valor: sessao ? sessao.profissional_id : (episodio.profissional_principal_id || null),
+
+      valor: sessao ? sessao.profissional_id : (meuProfissionalId() || episodio.profissional_principal_id || null),
       on: { change: function () {
         marcarAlterado();
         if (!valenciaEscolhida) { var p = perfilDe(campoProfissional.controlo.value); if (p) mudarValencia(C.valenciaDoPerfil(p)); }
@@ -16031,7 +16037,8 @@ window.CLINIA = window.CLINIA || {};
       var medicoesNovas = listaMedicoes.ler();
 
       var restaurar = botaoGravar.ocupado('A gravar…');
-      var profissionalId = lerTexto('profissional_id') || C.auth.perfilId();
+
+      var profissionalId = lerTexto('profissional_id') || meuProfissionalId() || null;
 
       var carga = {};
       var intensidade = lerTexto('carga_intensidade');
