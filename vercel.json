@@ -23,8 +23,21 @@
       ]
     },
     {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://adkhmyyqrmeoctqhphki.supabase.co wss://adkhmyyqrmeoctqhphki.supabase.co; img-src 'self' data: blob: https://adkhmyyqrmeoctqhphki.supabase.co; font-src 'self' data:; worker-src 'self'; manifest-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        },
         {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
@@ -39,7 +52,7 @@
         },
         {
           "key": "Permissions-Policy",
-          "value": "geolocation=(), microphone=(), camera=()"
+          "value": "geolocation=(), microphone=(), camera=(self)"
         },
         {
           "key": "Strict-Transport-Security",
