@@ -1420,7 +1420,7 @@ window.CLINIA = window.CLINIA || {};
 (function (C) {
   'use strict';
 
-  C.VERSAO = '2026-10-21 15:55';
+  C.VERSAO = '2026-10-21 17:13';
 
   C.RELEASE = '2026.10.21-023-candidata';
 
@@ -2376,6 +2376,15 @@ window.CLINIA = window.CLINIA || {};
     return pedidoAuth('/auth/v1/factors', 'POST', {
       factor_type: 'totp', friendly_name: nome || ('Telemóvel ' + new Date().toISOString().slice(0, 10)), issuer: 'ClinIA'
     });
+  };
+
+  sb.auth.urlQr = function (qr) {
+    if (!qr || typeof qr !== 'string') return '';
+    var m = qr.match(/^data:image\/svg\+xml(;[^,]*)?,([\s\S]*)$/);
+    if (!m || /;base64/.test(m[1] || '')) return qr;
+    var svg = m[2];
+    if (svg.indexOf('<') === -1) { try { svg = decodeURIComponent(svg); } catch (e) {   } }
+    try { return URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })); } catch (e) { return qr; }
   };
 
   sb.auth.verificarFator = function (fatorId, codigo) {
@@ -5576,7 +5585,7 @@ window.CLINIA = window.CLINIA || {};
     }).then(function (f) {
       fatorId = f.id;
       var img = d.criar('img', { alt: 'Código QR para a aplicação de autenticação', width: '180', height: '180' });
-      img.src = f.totp && f.totp.qr_code;
+      img.src = C.sb.auth.urlQr(f.totp && f.totp.qr_code);
       d.substituir(corpo, [
         d.criar('ol', { classe: 'mfa-passos' }, [
           d.criar('li', { texto: 'Instala uma aplicação de autenticação no telemóvel (Google Authenticator, Microsoft Authenticator, 2FAS…).' }),
@@ -6849,7 +6858,7 @@ window.CLINIA = window.CLINIA || {};
         fatorId = f.id;
         d.limpar(qr);
         var img = d.criar('img', { alt: 'Código QR para a aplicação de autenticação', width: '180', height: '180' });
-        img.src = f.totp && f.totp.qr_code;
+        img.src = C.sb.auth.urlQr(f.totp && f.totp.qr_code);
         d.juntar(qr, [img, d.criar('div', { classe: 'ajuda', texto: 'Sem câmara? Escreve esta chave na aplicação: ' }),
           d.criar('code', { classe: 'mfa-segredo', texto: (f.totp && f.totp.secret) || '' })]);
         codigo.controlo.focus();
