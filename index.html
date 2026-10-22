@@ -1319,7 +1319,7 @@ window.CLINIA_CONFIG = {
 window.CLINIA = window.CLINIA || {};
 (function (C) {
 'use strict';
-C.VERSAO = '2026-10-22 08:36';
+C.VERSAO = '2026-10-22 09:08';
 
 C.RELEASE = '2026.10.22-026-candidata';
 
@@ -10414,7 +10414,7 @@ nome: 'filtro_especialidade',
 rotulo: 'Especialidade',
 tipo: 'select',
 valor: '',
-opcoes: C.opcoes('especialidade', 'Todas')
+opcoes: C.opcoesEspecialidade(null, 'Todas')
 });
 var procura = d.campo({
 nome: 'filtro_procura',
@@ -10453,7 +10453,7 @@ rotulo: 'Especialidade',
 tipo: 'select',
 valor: '',
 on: { change: aoMudar },
-opcoes: C.opcoes('especialidade', 'Todas')
+opcoes: C.opcoesEspecialidade(null, 'Todas')
 });
 var procura = d.campo({
 nome: 'filtro_procura',
