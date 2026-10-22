@@ -1,5 +1,5 @@
 /* clinIA · service worker — gerado pelo build */
-var CACHE = 'clinia-2026.10.22-027-candidata-202610220944';
+var CACHE = 'clinia-2026.10.22-028-candidata-202610221355';
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(['./']); }).then(function () { return self.skipWaiting(); }));
 });
