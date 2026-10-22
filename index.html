@@ -1071,6 +1071,51 @@ min-width: 220px; background: var(--superficie, #fff); border: 1px solid var(--l
 .mapa-legenda { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--texto-suave); }
 .mapa-legenda-item { display: inline-flex; align-items: center; gap: 4px; }
 .mapa-legenda-item i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.hep-editor { display: grid; gap: 10px; }
+.hep-procura { width: 100%; padding: 9px 12px; border: 1px solid var(--linha-forte); border-radius: var(--raio-p); font: inherit; }
+.hep-resultados { display: flex; flex-wrap: wrap; gap: 6px; max-height: 180px; overflow: auto; }
+.hep-opcao { border: 1px solid var(--linha); background: var(--branco); border-radius: 999px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 13px; text-align: left; }
+.hep-opcao:hover { border-color: var(--ciano-deep); }
+.hep-lista { display: grid; gap: 8px; }
+.hep-linha { border: 1px solid var(--linha); border-radius: var(--raio-p); padding: 8px 10px; display: grid; gap: 6px; }
+.hep-linha-topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.hep-linha-acoes { display: flex; gap: 2px; }
+.hep-dose { display: flex; flex-wrap: wrap; gap: 8px; }
+.hep-campo { display: grid; gap: 2px; font-size: 12px; color: var(--texto-suave); }
+.hep-campo input { font: inherit; font-size: 14px; color: var(--texto); padding: 6px 8px; border: 1px solid var(--linha-forte); border-radius: var(--raio-p); width: 100%; }
+.hep-resumo { margin: 6px 0; padding-left: 20px; display: grid; gap: 2px; }
+.impressao-plano { display: none; }
+@media print {
+body.a-imprimir-plano > *:not(.impressao-plano) { display: none !important; }
+body.a-imprimir-plano .impressao-plano { display: block !important; color: #000; }
+.impressao-plano-topo { display: flex; justify-content: space-between; border-bottom: 2px solid #1E1B4B; padding-bottom: 6px; margin-bottom: 10px; }
+.impressao-plano h1 { font-size: 16pt; margin: 0; }
+.impressao-plano-clinica { font-weight: 600; }
+.impressao-plano-lista { padding-left: 18px; }
+.impressao-plano-lista li { margin-bottom: 10px; }
+.impressao-plano-ex { display: flex; justify-content: space-between; gap: 10px; }
+.impressao-plano-dose { font-weight: 600; white-space: nowrap; }
+.impressao-plano-evitar, .impressao-plano-atencao, .impressao-plano-nota { font-size: 9.5pt; }
+.impressao-plano-atencao { font-weight: 600; }
+.impressao-plano-registo { font-size: 9.5pt; color: #444; margin-top: 2px; }
+.impressao-plano-rodape { font-size: 9.5pt; border-top: 1px solid #bbb; padding-top: 6px; }
+.impressao-plano-folheto pre { white-space: pre-wrap; font-family: inherit; font-size: 10.5pt; }
+}
+.modo-utente { position: fixed; inset: 0; z-index: 1500; background: var(--areia); overflow: auto; padding: 20px 16px 40px; }
+.modo-utente-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; max-width: 760px; margin: 0 auto 18px; }
+.modo-utente-escala { font-size: 20px; font-weight: 700; color: var(--indigo); }
+.modo-utente-periodo { color: var(--texto-suave); font-size: 16px; }
+.modo-utente-palco { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+.modo-utente-progresso { color: var(--texto-suave); font-size: 15px; }
+.modo-utente-barra { height: 6px; background: var(--platina); border-radius: 3px; overflow: hidden; }
+.modo-utente-barra i { display: block; height: 100%; background: var(--ciano-deep); }
+.modo-utente-pergunta { font-size: 26px; line-height: 1.3; margin: 8px 0; color: var(--texto); }
+.modo-utente-ajuda { font-size: 17px; color: var(--texto-suave); }
+.modo-utente-opcoes { display: grid; gap: 10px; }
+.modo-utente-opcao { font: inherit; font-size: 20px; text-align: left; padding: 16px 18px; border: 2px solid var(--linha-forte); border-radius: var(--raio); background: var(--branco); cursor: pointer; min-height: 56px; }
+.modo-utente-opcao.escolhida { border-color: var(--ciano-deep); background: var(--ciano-claro); font-weight: 600; }
+.modo-utente-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; }
+.modo-utente-pergunta:focus { outline: none; }
 
 
 /* ===== estilos/toque.css ===== */
@@ -1274,9 +1319,9 @@ window.CLINIA_CONFIG = {
 window.CLINIA = window.CLINIA || {};
 (function (C) {
 'use strict';
-C.VERSAO = '2026-10-21 20:29';
+C.VERSAO = '2026-10-22 08:36';
 
-C.RELEASE = '2026.10.21-025-candidata';
+C.RELEASE = '2026.10.22-026-candidata';
 
 C.BUILD_PRODUTO = 'rehab';
 
@@ -4764,6 +4809,15 @@ return false;
 'use strict';
 var d = C.dom;
 var ultimo = Date.now(), relogio = null, aberto = false, camada = null;
+var aoDesbloquear = [];
+
+var MARCA = 'clinia.preso';
+function marcar(ligar) {
+try { if (ligar) window.localStorage.setItem(MARCA, '1'); else window.localStorage.removeItem(MARCA); } catch (e) {   }
+}
+function marcado() {
+try { return window.localStorage.getItem(MARCA) === '1'; } catch (e) { return false; }
+}
 var EVENTOS = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
 function limiteMs() {
 var m = Number(C.config.inatividadeMinutos);
@@ -4789,7 +4843,7 @@ var restaurar = botao.ocupado ? botao.ocupado('A confirmar…') : function () {}
 if (fatorId) {
 var c = String(campo.controlo.value || '').replace(/\s+/g, '');
 if (!/^\d{6}$/.test(c)) { restaurar(); erro.textContent = 'O código tem 6 algarismos.'; return; }
-C.sb.auth.verificarFator(fatorId, c).then(function () { restaurar(); abrir(); }).catch(function (e) {
+C.sb.auth.verificarFator(fatorId, c).then(function () { restaurar(); desbloqueado(); }).catch(function (e) {
 restaurar();
 erro.textContent = C.http.mensagemAmigavel(e);
 campo.controlo.select();
@@ -4817,7 +4871,7 @@ return;
 }
 
 if (passo && passo.mfa === 'inscrever') { abrir(); C.app.terminarSessao(); return; }
-abrir();
+desbloqueado();
 }).catch(function (e) {
 restaurar();
 erro.textContent = e && e.rede ? 'Sem ligação: não é possível confirmar a palavra-passe agora.' : 'Palavra-passe errada.';
@@ -4840,7 +4894,14 @@ C.ui.botaoFantasma({ texto: 'Terminar sessão', on: function () { abrir(); C.app
 document.body.appendChild(camada);
 setTimeout(function () { try { campo.controlo.focus(); } catch (e) {   } }, 30);
 }
+
+function desbloqueado() {
+abrir();
+var l = aoDesbloquear; aoDesbloquear = [];
+l.forEach(function (fn) { try { fn(); } catch (e) {   } });
+}
 function abrir() {
+marcar(false);
 aberto = false;
 ultimo = Date.now();
 var app = d.porId('app');
@@ -4852,6 +4913,7 @@ C.ui = C.ui || {};
 C.ui.bloqueio = {
 iniciar: function () {
 ultimo = Date.now();
+if (marcado()) bloquear();
 EVENTOS.forEach(function (ev) { document.addEventListener(ev, atividade, true); });
 document.addEventListener('visibilitychange', verificar);
 if (!relogio) relogio = setInterval(verificar, 5000);
@@ -4860,9 +4922,15 @@ parar: function () {
 EVENTOS.forEach(function (ev) { document.removeEventListener(ev, atividade, true); });
 document.removeEventListener('visibilitychange', verificar);
 if (relogio) { clearInterval(relogio); relogio = null; }
+aoDesbloquear = [];
 abrir();
 },
 bloquear: bloquear,
+
+prender: function () { marcar(true); },
+prenderEBloquear: function () { marcar(true); bloquear(); },
+
+depoisDeDesbloquear: function (fn) { if (typeof fn === 'function') aoDesbloquear.push(fn); },
 aberto: function () { return aberto; }
 };
 }(window.CLINIA));
@@ -6113,6 +6181,530 @@ raiz.ler = function () { return mapa.slice(); };
 return raiz;
 }
 C.ui.mapaCorporal = { criar: criar, resumo: resumo, TIPOS: TIPOS, ZONAS: { frente: FRENTE, costas: COSTAS } };
+}(window.CLINIA));
+
+
+/* ==========================================================================
+   ui/plano-casa.js — Plano de exercícios para casa e folhetos (026)
+   ========================================================================== */
+
+(function (C) {
+'use strict';
+var d = C.dom;
+var u = C.util;
+function juntar(a, b) {
+var r = {}, k;
+for (k in a) if (Object.prototype.hasOwnProperty.call(a, k)) r[k] = a[k];
+for (k in b) if (Object.prototype.hasOwnProperty.call(b, k)) r[k] = b[k];
+return r;
+}
+function ler(tabela, assinatura, construtor) {
+return C.dados.ler(tabela, assinatura, construtor, { forcar: true }).catch(function () { return []; });
+}
+function biblioteca() {
+return ler('exercicios', 'hep:biblioteca', function (q) {
+q.selecionar('id,clinica_id,codigo,nome,descricao,instrucoes,erros_comuns,regiao,objetivo,dificuldade,series_default,reps_default,tempo_default,frequencia_default,contraindicacoes,ativo')
+.eq('ativo', true).ordenar('regiao').limite(500);
+});
+}
+function folhetos() {
+return ler('folhetos_educacao', 'hep:folhetos', function (q) {
+q.selecionar('id,clinica_id,codigo,titulo,tema,corpo,ativo').eq('ativo', true).ordenar('titulo').limite(200);
+});
+}
+
+function planoAtivo(episodioId, utenteId) {
+return C.dados.ler('hep_prescricoes', 'hep:ativo:' + (episodioId || utenteId), function (q) {
+q.selecionar('*').eq(episodioId ? 'episodio_id' : 'utente_id', episodioId || utenteId).eq('ativo', true).ordenar('created_at', true).limite(1);
+}, { forcar: true }).then(function (l) {
+var p = l && l[0];
+if (!p) return null;
+if (typeof p.folhetos === 'string') p.folhetos = p.folhetos.replace(/[{}]/g, '').split(',').filter(Boolean);
+return C.dados.ler('hep_exercicios', 'hep:ex:' + p.id, function (q) { q.selecionar('*').eq('prescricao_id', p.id).ordenar('ordem'); }, { forcar: true })
+.then(function (ex) { p.exercicios = ex || []; return p; });
+});
+}
+
+function gravarPlano(dados, linhas, porId) {
+var exercicios = linhas.map(function (l) {
+return { exercicio_id: l.exercicio_id || null, nome: l.nome, instrucoes: l.instrucoes || null, series: l.series || null, reps: l.reps || null,
+tempo: l.tempo || null, frequencia: l.frequencia || null, carga: l.carga || null, notas: l.notas || null };
+});
+if (!C.config.demonstracao) {
+if (!C.http.emLinha()) return Promise.reject(new Error('Gravar o plano de casa exige ligação ao servidor. Tenta quando a rede voltar.'));
+return C.sb.rpc('gravar_plano_casa', { p_plano: dados, p_exercicios: exercicios });
+}
+var novoId;
+return C.dados.criar('hep_prescricoes', juntar({ clinica_id: C.auth.clinicaId(), ativo: true }, dados), { um: true, offline: false, descricao: 'Plano de casa' })
+.then(function (novo) {
+novoId = novo.id;
+return C.dados.criarVarios('hep_exercicios', exercicios.map(function (e, i) {
+var b = porId[e.exercicio_id] || {};
+return juntar(e, { clinica_id: C.auth.clinicaId(), utente_id: dados.utente_id, prescricao_id: novoId, ordem: i + 1,
+erros_comuns: b.erros_comuns || null, contraindicacoes: b.contraindicacoes || null });
+}), { offline: false, descricao: 'Exercícios do plano de casa' });
+})
+.then(function () {
+return C.dados.alterarPorFiltro('hep_prescricoes',
+[(dados.episodio_id ? 'episodio_id=eq.' + dados.episodio_id : 'utente_id=eq.' + dados.utente_id), 'ativo=eq.true', 'id=neq.' + novoId],
+{ ativo: false, data_fim: u.hojeISO() }, { offline: false });
+})
+.then(function () { return novoId; });
+}
+function dose(e) {
+var partes = [];
+if (e.series && e.reps) partes.push(e.series + ' × ' + e.reps);
+else if (e.reps) partes.push(e.reps);
+if (e.tempo) partes.push(e.tempo);
+if (e.carga) partes.push(e.carga);
+if (e.frequencia) partes.push(e.frequencia);
+return partes.join(' · ');
+}
+
+function editor(op) {
+var anterior = op.plano || null;
+return Promise.all([biblioteca(), folhetos()]).then(function (r) {
+var lib = r[0] || [], fol = r[1] || [];
+var porId = {}; lib.forEach(function (e) { porId[e.id] = e; });
+var linhas = (anterior && anterior.exercicios ? anterior.exercicios : []).map(function (e) {
+return { exercicio_id: e.exercicio_id, nome: e.nome, instrucoes: e.instrucoes, series: e.series, reps: e.reps, tempo: e.tempo, frequencia: e.frequencia, carga: e.carga, notas: e.notas };
+});
+var escolhidos = (anterior && anterior.folhetos) || [];
+if (typeof escolhidos === 'string') escolhidos = escolhidos.replace(/[{}]/g, '').split(',').filter(Boolean);
+var campoTitulo = d.campo({ nome: 'titulo', rotulo: 'Título', valor: (anterior && anterior.titulo) || 'Plano de exercícios para casa' });
+var campoInicio = d.campo({ nome: 'data_inicio', tipo: 'date', rotulo: 'Início', valor: (anterior && anterior.data_inicio) || u.hojeISO() });
+var campoFreq = d.campo({ nome: 'frequencia_global', rotulo: 'Frequência geral', placeholder: 'ex.: todos os dias, de manhã', valor: (anterior && anterior.frequencia_global) || '' });
+var campoOri = d.campo({ nome: 'orientacoes', tipo: 'textarea', linhas: 3, rotulo: 'Orientações para o utente',
+placeholder: 'ex.: um desconforto ligeiro é normal; se a dor aumentar e não passar até ao dia seguinte, reduza e avise-nos.',
+valor: (anterior && anterior.orientacoes) || '' });
+var procura = d.criar('input', { type: 'search', placeholder: 'Procurar exercício (nome ou região)…', 'aria-label': 'Procurar exercício', classe: 'hep-procura' });
+var resultados = d.criar('div', { classe: 'hep-resultados' });
+var lista = d.criar('div', { classe: 'hep-lista' });
+var erro = d.criar('div');
+function pintarResultados() {
+var t = u.semAcentos ? u.semAcentos(procura.value) : String(procura.value || '').toLowerCase();
+var achados = lib.filter(function (e) {
+if (!t) return true;
+return u.contem(e.nome + ' ' + (e.regiao || '') + ' ' + (e.objetivo || ''), procura.value);
+}).slice(0, t ? 30 : 40);
+d.substituir(resultados, achados.map(function (e) {
+return d.criar('button', { type: 'button', classe: 'hep-opcao', on: { click: function () {
+linhas.push({ exercicio_id: e.id, nome: e.nome, instrucoes: e.instrucoes, series: e.series_default ? String(e.series_default) : '',
+reps: e.reps_default || '', tempo: e.tempo_default || '', frequencia: e.frequencia_default || '', carga: '', notas: '' });
+pintarLista();
+} } }, [d.criar('b', { texto: e.nome }), d.criar('span', { classe: 'ajuda', texto: ' ' + (e.regiao || '') + (e.clinica_id ? ' · da clínica' : '') })]);
+}));
+}
+procura.addEventListener('input', u.debounce ? u.debounce(pintarResultados, 150) : pintarResultados);
+function campoLinha(l, chave, rotulo, largura) {
+var i = d.criar('input', { type: 'text', valor: l[chave] || '', 'aria-label': rotulo, placeholder: rotulo });
+if (largura) i.style.maxWidth = largura;
+i.addEventListener('input', function () { l[chave] = i.value; });
+return d.criar('label', { classe: 'hep-campo' }, [d.criar('span', { texto: rotulo }), i]);
+}
+function pintarLista() {
+if (!linhas.length) { d.substituir(lista, [d.criar('div', { classe: 'ajuda', texto: 'Ainda sem exercícios. Escolhe da lista acima.' })]); return; }
+d.substituir(lista, linhas.map(function (l, i) {
+return d.criar('div', { classe: 'hep-linha' }, [
+d.criar('div', { classe: 'hep-linha-topo' }, [
+d.criar('b', { texto: (i + 1) + '. ' + l.nome }),
+d.criar('span', { classe: 'hep-linha-acoes' }, [
+C.ui.botaoFantasma({ texto: '↑', titulo: 'Subir', rotuloAcessivel: 'Subir', desativado: i === 0, on: function () { var x = linhas.splice(i, 1)[0]; linhas.splice(i - 1, 0, x); pintarLista(); } }),
+C.ui.botaoFantasma({ texto: '↓', titulo: 'Descer', rotuloAcessivel: 'Descer', desativado: i === linhas.length - 1, on: function () { var x = linhas.splice(i, 1)[0]; linhas.splice(i + 1, 0, x); pintarLista(); } }),
+C.ui.botaoFantasma({ texto: '×', titulo: 'Retirar', rotuloAcessivel: 'Retirar exercício', on: function () { linhas.splice(i, 1); pintarLista(); } })
+])
+]),
+d.criar('div', { classe: 'hep-dose' }, [
+campoLinha(l, 'series', 'Séries', '70px'), campoLinha(l, 'reps', 'Repetições', '140px'),
+campoLinha(l, 'tempo', 'Tempo', '90px'), campoLinha(l, 'carga', 'Carga', '120px'),
+campoLinha(l, 'frequencia', 'Frequência', '120px')
+]),
+campoLinha(l, 'notas', 'Nota para o utente')
+]);
+}));
+}
+var caixasFolhetos = [];
+var listaFolhetos = d.criar('div', { classe: 'seguranca-opcoes' }, fol.map(function (f) {
+var o = d.opcao({ nome: 'folheto', valor: f.id, rotulo: f.titulo, marcado: escolhidos.indexOf(f.id) !== -1 });
+caixasFolhetos.push(o.querySelector('input'));
+return o;
+}));
+pintarResultados();
+pintarLista();
+return C.avisos.dialogo({
+titulo: anterior ? 'Editar plano de casa' : 'Novo plano de casa',
+descricao: 'Escolhe os exercícios, ajusta a dose e junta os folhetos. Depois imprime a folha para o utente.',
+classe: 'largo',
+textoConfirmar: 'Gravar plano',
+conteudo: d.criar('div', { classe: 'hep-editor' }, [
+d.criar('div', { classe: 'grelha g2' }, [campoTitulo, campoInicio]),
+campoFreq, campoOri,
+C.ui.separador('Biblioteca de exercícios'),
+procura, resultados,
+C.ui.separador('Exercícios do plano'),
+lista,
+C.ui.separador('Folhetos a entregar'),
+fol.length ? listaFolhetos : d.criar('div', { classe: 'ajuda', texto: 'Sem folhetos disponíveis.' }),
+erro
+]),
+aoConfirmar: function () {
+d.limpar(erro);
+if (!linhas.length) { erro.appendChild(C.ui.avisoFaixa([d.criar('div', { texto: 'Acrescenta pelo menos um exercício.' })])); return false; }
+var dados = {
+utente_id: op.utenteId, episodio_id: op.episodioId || null,
+titulo: String(campoTitulo.controlo.value || '').trim() || 'Plano de exercícios para casa',
+data_inicio: campoInicio.controlo.value || u.hojeISO(),
+frequencia_global: String(campoFreq.controlo.value || '').trim() || null,
+orientacoes: String(campoOri.controlo.value || '').trim() || null,
+folhetos: caixasFolhetos.filter(function (c) { return c.checked; }).map(function (c) { return c.value; })
+};
+return gravarPlano(dados, linhas, porId).then(function () {
+['hep_prescricoes', 'hep_exercicios'].forEach(function (t) { C.dados.invalidar(t); });
+C.avisos.ok('Plano de casa gravado.');
+return true;
+}).catch(function (e) {
+d.limpar(erro);
+erro.appendChild(C.ui.avisoFaixa([d.criar('div', { texto: 'O plano NÃO foi gravado: ' + C.http.mensagemAmigavel(e) })]));
+return false;
+});
+}
+});
+});
+}
+
+function imprimir(plano, utente) {
+if (!plano) return Promise.resolve();
+return Promise.all([biblioteca(), folhetos()]).then(function (r) {
+var porId = {}; (r[0] || []).forEach(function (e) { porId[e.id] = e; });
+var fol = (r[1] || []).filter(function (f) { return (plano.folhetos || []).indexOf(f.id) !== -1; });
+var antigo = d.procurar('.impressao-plano');
+if (antigo && antigo.parentNode) antigo.parentNode.removeChild(antigo);
+var folha = d.criar('div', { classe: 'impressao-plano' }, [
+d.criar('div', { classe: 'impressao-plano-topo' }, [
+d.criar('div', null, [d.criar('h1', { texto: plano.titulo || 'Plano de exercícios para casa' }),
+d.criar('div', { texto: (utente && utente.nome ? utente.nome + ' · ' : '') + 'desde ' + u.formatarData(plano.data_inicio) })]),
+d.criar('div', { classe: 'impressao-plano-clinica', texto: C.auth.clinicaNome() })
+]),
+plano.frequencia_global ? d.criar('p', null, [d.criar('b', { texto: 'Quando: ' }), document.createTextNode(plano.frequencia_global)]) : null,
+plano.orientacoes ? d.criar('p', { classe: 'impressao-plano-orientacoes', texto: plano.orientacoes }) : null,
+d.criar('ol', { classe: 'impressao-plano-lista' }, (plano.exercicios || []).map(function (e) {
+
+var lib = porId[e.exercicio_id] || {};
+var evitar = ('erros_comuns' in e) ? e.erros_comuns : lib.erros_comuns;
+var atencao = ('contraindicacoes' in e) ? e.contraindicacoes : lib.contraindicacoes;
+return d.criar('li', { classe: 'sem-quebra' }, [
+d.criar('div', { classe: 'impressao-plano-ex' }, [d.criar('b', { texto: e.nome }), d.criar('span', { classe: 'impressao-plano-dose', texto: dose(e) })]),
+e.instrucoes ? d.criar('div', { texto: e.instrucoes }) : null,
+evitar ? d.criar('div', { classe: 'impressao-plano-evitar', texto: 'Evite: ' + evitar }) : null,
+atencao ? d.criar('div', { classe: 'impressao-plano-atencao', texto: 'Atenção: ' + atencao }) : null,
+e.notas ? d.criar('div', { classe: 'impressao-plano-nota', texto: e.notas }) : null,
+d.criar('div', { classe: 'impressao-plano-registo', texto: 'Fiz: ☐ seg ☐ ter ☐ qua ☐ qui ☐ sex ☐ sáb ☐ dom' })
+]);
+})),
+d.criar('p', { classe: 'impressao-plano-rodape', texto: 'Um desconforto ligeiro durante ou depois dos exercícios é normal. Se a dor aumentar muito ou não passar até ao dia seguinte, reduza e contacte-nos.' })
+].concat(fol.map(function (f) {
+return d.criar('section', { classe: 'impressao-plano-folheto quebra-pagina' }, [d.criar('h2', { texto: f.titulo }), d.criar('pre', { texto: f.corpo })]);
+})));
+document.body.appendChild(folha);
+document.body.classList.add('a-imprimir-plano');
+
+var mql = window.matchMedia ? window.matchMedia('print') : null;
+function aoMudar(m) { if (!m.matches) limpar(); }
+function aoTocar() { limpar(); }
+function limpar() {
+document.body.classList.remove('a-imprimir-plano');
+if (folha.parentNode) folha.parentNode.removeChild(folha);
+window.removeEventListener('afterprint', limpar);
+document.removeEventListener('pointerdown', aoTocar, true);
+document.removeEventListener('keydown', aoTocar, true);
+if (mql && mql.removeListener) mql.removeListener(aoMudar);
+}
+window.addEventListener('afterprint', limpar);
+if (mql && mql.addListener) mql.addListener(aoMudar);
+window.print();
+setTimeout(function () {
+if (!folha.parentNode) return;
+document.addEventListener('pointerdown', aoTocar, true);
+document.addEventListener('keydown', aoTocar, true);
+}, 800);
+});
+}
+
+function cartao(op) {
+var corpo = d.criar('div', { classe: 'hep-corpo' });
+var atual = null;
+var carregado = false;
+function carregar() {
+return planoAtivo(op.episodioId, op.utenteId).then(function (p) {
+atual = p;
+carregado = true;
+d.limpar(corpo);
+if (!p) { corpo.appendChild(d.criar('div', { classe: 'ajuda', texto: 'Sem plano de casa. Cria um com os exercícios que o utente vai fazer em casa.' })); return; }
+d.juntar(corpo, [
+d.criar('div', { classe: 'ajuda', texto: (p.titulo || 'Plano') + ' · desde ' + u.formatarData(p.data_inicio) + (p.frequencia_global ? ' · ' + p.frequencia_global : '') }),
+d.criar('ol', { classe: 'hep-resumo' }, (p.exercicios || []).map(function (e) {
+return d.criar('li', null, [d.criar('span', { texto: e.nome }), d.criar('span', { classe: 'ajuda', texto: ' ' + dose(e) })]);
+})),
+(p.folhetos && p.folhetos.length) ? d.criar('div', { classe: 'ajuda', texto: p.folhetos.length + (p.folhetos.length === 1 ? ' folheto' : ' folhetos') + ' a entregar' }) : null
+]);
+}).catch(function (e) {
+atual = null;
+carregado = false;
+d.substituir(corpo, [C.ui.avisoFaixa([d.criar('div', { texto: 'Não foi possível carregar o plano de casa: ' + C.http.mensagemAmigavel(e) })])]);
+});
+}
+function abrir() {
+if (!carregado) { C.avisos.aviso('O plano de casa ainda não foi carregado. Tenta outra vez quando houver ligação.'); carregar(); return; }
+editor({ utenteId: op.utenteId, episodioId: op.episodioId, plano: atual }).then(function (r) { if (r) carregar(); });
+}
+carregar();
+return C.ui.cartao({
+titulo: 'Plano de casa',
+classe: 'hep-cartao',
+acoes: [
+C.ui.botaoPequeno({ texto: 'Editar', icone: 'editar', on: abrir }),
+C.ui.botaoPequeno({ texto: 'Imprimir', icone: 'imprimir', on: function () {
+if (!carregado) { C.avisos.aviso('O plano de casa ainda não foi carregado.'); return; }
+if (!atual) { C.avisos.aviso('Cria primeiro o plano de casa.'); return; }
+C.dados.lerUm('utentes', op.utenteId).catch(function () { return null; }).then(function (ut) { imprimir(atual, ut); });
+} })
+],
+corpo: corpo
+});
+}
+C.ui.planoCasa = { cartao: cartao, editor: editor, imprimir: imprimir, planoAtivo: planoAtivo, dose: dose };
+}(window.CLINIA));
+
+
+/* ==========================================================================
+   ui/questionario-utente.js — Questionários em modo utente, no tablet (026)
+   ========================================================================== */
+
+(function (C) {
+'use strict';
+var d = C.dom;
+var u = C.util;
+var aoSair = null;
+function vetorDe(dominio) { return dominio === 'dor' ? 'dor' : (dominio === 'movimento' ? 'movimento' : 'funcao'); }
+function carregarEscalas() {
+return C.dados.ler('escalas', 'quest:escalas', function (q) {
+q.selecionar('*').eq('modo_administracao', 'utente').eq('ativo', true).ordenar('nome');
+}, { forcar: true }).then(function (escalas) {
+escalas = escalas || [];
+if (!escalas.length) return [];
+return C.dados.ler('escala_itens', 'quest:itens', function (q) {
+q.selecionar('*').em('escala_id', escalas.map(function (e) { return e.id; })).ordenar('ordem');
+}, { forcar: true }).then(function (itens) {
+escalas.forEach(function (e) { e.itens = (itens || []).filter(function (i) { return i.escala_id === e.id; }); });
+return escalas.filter(function (e) { return e.itens.length; });
+});
+});
+}
+function opcoesDo(item) {
+var o = item.opcoes;
+if (typeof o === 'string') { try { o = JSON.parse(o); } catch (e) { o = null; } }
+if (Array.isArray(o) && o.length) return o.map(function (x) { return { valor: x.valor, texto: x.texto || x.rotulo || String(x.valor) }; });
+var min = item.min_valor !== null && item.min_valor !== undefined ? Number(item.min_valor) : 0;
+var max = item.max_valor !== null && item.max_valor !== undefined ? Number(item.max_valor) : 10;
+var l = []; for (var v = min; v <= max; v++) l.push({ valor: v, texto: String(v) });
+return l;
+}
+
+function avisarQuandoDesbloquear(texto, tipo, depois) {
+C.ui.bloqueio.depoisDeDesbloquear(function () {
+if (tipo === 'erro') C.avisos.aviso(texto); else C.avisos.ok(texto);
+if (typeof depois === 'function') depois();
+});
+}
+function devolverAoTerapeuta(camada) {
+var app = d.porId('app');
+if (aoSair) { window.removeEventListener('beforeunload', aoSair); aoSair = null; }
+if (camada && camada.parentNode) camada.parentNode.removeChild(camada);
+if (app) { app.removeAttribute('inert'); app.removeAttribute('aria-hidden'); }
+C.ui.bloqueio.prenderEBloquear();
+}
+
+function textoPeriodo(p) {
+var t = String(p || '').trim().replace(/\bultim/gi, function (m) { return m.charAt(0) === 'U' ? 'Últim' : 'últim'; });
+if (!t) return '';
+t = t.charAt(0).toLowerCase() + t.slice(1);
+if (/^n(?:[oa]s?|est[ea]s?)\s/.test(t)) return 'Pense ' + t.replace(/[.]$/, '') + '.';
+return 'Período: ' + t.replace(/[.]$/, '') + '.';
+}
+function gravar(escala, respostas, op) {
+var profId = op.profissionalId || null;
+var score = C.escalas && C.escalas.calcular ? C.escalas.calcular(escala, escala.itens, respostas) : null;
+var interp = C.escalas && C.escalas.interpretar ? C.escalas.interpretar(escala, score) : null;
+
+if (!C.config.demonstracao) {
+return C.sb.rpc('gravar_questionario_utente', {
+p_episodio: op.episodioId, p_escala: escala.id, p_respostas: respostas,
+p_score: score, p_interpretacao: interp ? interp.rotulo : null, p_gravidade: interp ? interp.gravidade : null,
+p_profissional: profId
+}).then(function (r) {
+['mfr_escala_aplicada', 'atos_clinicos'].forEach(function (t) { C.dados.invalidar(t); });
+var g = Array.isArray(r) ? r[0] : r;
+return { score: g && g.score !== undefined && g.score !== null ? g.score : score, escala: escala };
+});
+}
+return C.dados.criar('atos_clinicos', {
+clinica_id: C.auth.clinicaId(), utente_id: op.utenteId, episodio_id: op.episodioId, profissional_id: profId,
+tipo: 'nota_clinica', especialidade: 'mfr', fase: 'seguimento', estado: 'rascunho', modalidade: 'presencial',
+observacoes: (escala.nome_curto || escala.nome) + ' respondido pelo utente no tablet (modo utente).',
+dados: { origem: 'questionario_utente', escala: escala.codigo }
+}, { um: true, offline: false, descricao: 'Questionário respondido pelo utente' }).then(function (ato) {
+return C.dados.criar('mfr_escala_aplicada', {
+clinica_id: C.auth.clinicaId(), ato_id: ato.id, episodio_id: op.episodioId, utente_id: op.utenteId,
+escala_id: escala.id, escala_codigo: escala.codigo, escala_versao: escala.versao || '1',
+vetor: vetorDe(escala.dominio), respostas: respostas, score: score, score_calculado: true,
+interpretacao: interp ? interp.rotulo : null, gravidade: interp ? interp.gravidade : null,
+notas: 'Respondido pelo utente no tablet (modo utente).', aplicada_por: profId, aplicada_em: new Date().toISOString()
+}, { um: true, offline: false, descricao: 'Escala respondida pelo utente' });
+}).then(function (aplicada) {
+['mfr_escala_aplicada', 'atos_clinicos'].forEach(function (t) { C.dados.invalidar(t); });
+var s = aplicada && aplicada.score !== undefined && aplicada.score !== null ? aplicada.score : score;
+return { score: s, escala: escala };
+});
+}
+
+function modoUtente(escala, op) {
+var respostas = {};
+var i = 0;
+var pronto = 0;
+var app = d.porId('app');
+
+C.ui.bloqueio.prender();
+aoSair = function (e) { e.preventDefault(); e.returnValue = ''; return ''; };
+window.addEventListener('beforeunload', aoSair);
+if (app) { app.setAttribute('inert', ''); app.setAttribute('aria-hidden', 'true'); }
+var palco = d.criar('div', { classe: 'modo-utente-palco' });
+var camada = d.criar('div', { classe: 'modo-utente', role: 'dialog', 'aria-modal': 'true', 'aria-label': escala.nome }, [
+d.criar('div', { classe: 'modo-utente-topo' }, [
+d.criar('div', null, [d.criar('div', { classe: 'modo-utente-escala', texto: escala.nome_curto || escala.nome }),
+escala.periodo_recordacao ? d.criar('div', { classe: 'modo-utente-periodo', texto: textoPeriodo(escala.periodo_recordacao) }) : null]),
+C.ui.botaoFantasma({ texto: 'Interromper (terapeuta)', on: function () {
+respostas = {};
+devolverAoTerapeuta(camada);
+avisarQuandoDesbloquear('Questionário interrompido; nada foi gravado.', 'erro');
+} })
+]),
+palco
+]);
+function pintar() {
+var item = escala.itens[i];
+var total = escala.itens.length;
+var atual = respostas[item.codigo] ? respostas[item.codigo].valor : null;
+pronto = Date.now() + 350;
+var idPergunta = 'modo-utente-p-' + i;
+var botoes = opcoesDo(item).map(function (o) {
+var marcada = String(atual) === String(o.valor);
+return d.criar('button', {
+type: 'button', classe: ['modo-utente-opcao', marcada ? 'escolhida' : null],
+role: 'radio', 'aria-checked': marcada ? 'true' : 'false',
+on: { click: function () {
+if (Date.now() < pronto) return;
+respostas[item.codigo] = { valor: o.valor };
+if (i < total - 1) { i++; pintar(); } else pintar();
+} }
+}, [d.criar('span', { texto: o.texto })]);
+});
+var ultimo = i === total - 1;
+var respondidas = Object.keys(respostas).length;
+d.substituir(palco, [
+d.criar('div', { classe: 'modo-utente-progresso', texto: 'Pergunta ' + (i + 1) + ' de ' + total }),
+d.criar('div', { classe: 'modo-utente-barra' }, [d.criar('i', { estilo: { width: Math.round(100 * respondidas / total) + '%' } })]),
+d.criar('h2', { classe: 'modo-utente-pergunta', id: idPergunta, tabindex: '-1', texto: item.texto }),
+item.ajuda ? d.criar('p', { classe: 'modo-utente-ajuda', texto: item.ajuda }) : null,
+d.criar('div', { classe: 'modo-utente-opcoes', role: 'radiogroup', 'aria-labelledby': idPergunta }, botoes),
+d.criar('div', { classe: 'modo-utente-nav' }, [
+C.ui.botao({ texto: '← Anterior', desativado: i === 0, on: function () { i--; pintar(); } }),
+ultimo
+? C.ui.botaoPrimario({ texto: 'Terminar', desativado: respondidas < total, on: terminar })
+: C.ui.botao({ texto: 'Seguinte →', desativado: !respostas[item.codigo], on: function () { i++; pintar(); } })
+]),
+ultimo && respondidas < total ? d.criar('p', { classe: 'modo-utente-ajuda', texto: 'Faltam ' + (total - respondidas) + ' respostas. Use «Anterior» para voltar.' }) : null
+]);
+var h = d.porId(idPergunta);
+if (h) { try { h.focus({ preventScroll: true }); } catch (e) {   } }
+}
+function terminar() {
+d.substituir(palco, [d.criar('h2', { classe: 'modo-utente-pergunta', texto: 'A guardar…' })]);
+gravar(escala, respostas, op).then(function (r) {
+d.substituir(palco, [
+d.criar('h2', { classe: 'modo-utente-pergunta', texto: 'Obrigado!' }),
+d.criar('p', { classe: 'modo-utente-ajuda', texto: 'Entregue o tablet ao seu terapeuta.' }),
+C.ui.botao({ texto: 'Sou o terapeuta', on: function () {
+devolverAoTerapeuta(camada);
+avisarQuandoDesbloquear((escala.nome_curto || escala.nome) + ' gravado: ' + u.numero(r.score, 0) +
+(escala.score_max !== null && escala.score_max !== undefined ? '/' + u.numero(escala.score_max, 0) : '') + '.', 'ok', op.aoGravar);
+} })
+]);
+}).catch(function (erro) {
+d.substituir(palco, [
+d.criar('h2', { classe: 'modo-utente-pergunta', texto: 'Não foi possível guardar.' }),
+d.criar('p', { classe: 'modo-utente-ajuda', texto: 'Entregue o tablet ao seu terapeuta.' }),
+C.ui.botao({ texto: 'Sou o terapeuta', on: function () {
+devolverAoTerapeuta(camada);
+avisarQuandoDesbloquear('O questionário NÃO foi gravado: ' + C.http.mensagemAmigavel(erro), 'erro');
+} })
+]);
+});
+}
+document.body.appendChild(camada);
+pintar();
+}
+
+function iniciar(op) {
+if (!op.episodioId) { C.avisos.aviso('O questionário fica num episódio: abre-o a partir do episódio ou da sessão.'); return Promise.resolve(null); }
+return Promise.all([
+carregarEscalas(),
+C.dados.ler('profissionais', 'quest:prof', function (q) { q.selecionar('id,perfil_id'); }).catch(function () { return []; })
+]).then(function (r) {
+var escalas = r[0] || [];
+var eu = (r[1] || []).filter(function (p) { return p.perfil_id === C.auth.perfilId(); })[0];
+if (!escalas.length) { C.avisos.aviso('Não há questionários de autopreenchimento disponíveis.'); return null; }
+var campo = d.campo({ nome: 'escala', tipo: 'select', rotulo: 'Questionário', opcoes: escalas.map(function (e) {
+return { valor: e.id, rotulo: (e.nome_curto || e.nome) + ' · ' + e.itens.length + ' perguntas' };
+}) });
+return C.avisos.dialogo({
+titulo: 'Questionário no tablet',
+descricao: 'O ecrã fica só com o questionário. No fim, para voltar à aplicação, é preciso a tua palavra-passe.',
+textoConfirmar: 'Entregar o tablet',
+conteudo: d.criar('div', null, [campo,
+d.criar('p', { classe: 'ajuda', texto: 'Dica: no tablet, ative o «acesso guiado» (iPad) ou a «afixação de ecrã» (Android) para o utente não sair do navegador.' })]),
+aoConfirmar: function () { return true; }
+}).then(function (ok) {
+if (!ok) return null;
+var escala = escalas.filter(function (e) { return e.id === campo.controlo.value; })[0];
+modoUtente(escala, { utenteId: op.utenteId, episodioId: op.episodioId, profissionalId: eu ? eu.id : null, aoGravar: op.aoGravar });
+return true;
+});
+});
+}
+
+function cartao(op) {
+var corpo = d.criar('div');
+function carregar() {
+C.dados.ler('mfr_escala_aplicada', 'quest:ult:' + op.episodioId, function (q) {
+q.selecionar('escala_codigo,score,interpretacao,aplicada_em,notas').eq('episodio_id', op.episodioId).ordenar('aplicada_em', true).limite(5);
+}, { forcar: true }).catch(function () { return []; }).then(function (l) {
+d.substituir(corpo, (l && l.length) ? l.map(function (a) {
+return d.criar('div', { classe: 'ajuda', texto: a.escala_codigo.toUpperCase() + ': ' + u.numero(a.score, 0) + (a.interpretacao ? ' — ' + a.interpretacao : '') +
+' · ' + u.formatarData(String(a.aplicada_em).slice(0, 10)) + (/modo utente/.test(a.notas || '') ? ' · pelo utente' : '') });
+}) : [d.criar('div', { classe: 'ajuda', texto: 'Sem questionários neste episódio.' })]);
+});
+}
+carregar();
+return C.ui.cartao({
+titulo: 'Questionários',
+classe: 'questionarios-cartao',
+acoes: [C.ui.botaoPequeno({ texto: 'Responder no tablet', icone: 'mais', on: function () {
+iniciar({ utenteId: op.utenteId, episodioId: op.episodioId, aoGravar: carregar });
+} })],
+corpo: corpo
+});
+}
+C.ui.questionarioUtente = { iniciar: iniciar, cartao: cartao, _opcoesDo: opcoesDo };
 }(window.CLINIA));
 
 
@@ -11344,6 +11936,8 @@ d.criar('div', { classe: 'grelha' }, [
 episodioBarraLateral(dados),
 
 dados.utente && C.auth.eClinico() && C.seguranca ? C.seguranca.cartao({ utenteId: dados.utente.id, episodioId: dados.episodio.id }) : null,
+dados.utente && C.auth.eClinico() && C.ui.planoCasa ? C.ui.planoCasa.cartao({ utenteId: dados.utente.id, episodioId: dados.episodio.id }) : null,
+dados.utente && C.auth.eClinico() && C.ui.questionarioUtente ? C.ui.questionarioUtente.cartao({ utenteId: dados.utente.id, episodioId: dados.episodio.id }) : null,
 dados.utente && C.auth.eClinico() ? C.ui.documentos.cartao({ utenteId: dados.utente.id, episodioId: dados.episodio.id }) : null,
 dados.utente && dados.utente.alertas && dados.utente.alertas.length
 ? C.ui.cartao({
@@ -15343,6 +15937,9 @@ utenteId: estado.utenteId, episodioId: episodioId, seguranca: estado.seguranca,
 aoMudar: function (s) { estado.seguranca = s; if (pintarEstado) pintarEstado(); }
 }) : null;
 
+var cartaoPlanoCasa = C.ui.planoCasa && episodioId ? C.ui.planoCasa.cartao({ utenteId: estado.utenteId, episodioId: episodioId }) : null;
+var cartaoQuestionarios = C.ui.questionarioUtente && episodioId ? C.ui.questionarioUtente.cartao({ utenteId: estado.utenteId, episodioId: episodioId }) : null;
+
 var cartaoReferencia = sessaoCartaoReferencia(anterior, estado.medicoesAnteriores, utente);
 var botaoGravarTexto = C.ui.botao({
 texto: sessao ? 'Gravar alterações' : 'Gravar sessão',
@@ -15453,7 +16050,7 @@ terapia_da_fala: [cartaoTF, cartaoIntervencao, cartaoDor]
 };
 function montarColuna() {
 d.limpar(colunaEsquerda);
-[cartaoSeguranca].concat(ORDEM[valencia] || ORDEM.fisioterapia).concat([cartaoReferencia]).forEach(function (c) { if (c) colunaEsquerda.appendChild(c); });
+[cartaoSeguranca].concat(ORDEM[valencia] || ORDEM.fisioterapia).concat([cartaoReferencia, cartaoPlanoCasa, cartaoQuestionarios]).forEach(function (c) { if (c) colunaEsquerda.appendChild(c); });
 var h = d.procurar('h3', cartaoDor);
 if (h) h.textContent = (valencia === 'fisioterapia' || valencia === 'osteopatia') ? 'Dor e medições' : 'Dor e medições (se aplicável)';
 [botoesTecnicas, botoesExercicios, botoesAtividades, botoesTarefas].forEach(function (b) { b.atualizar(); });
@@ -22564,7 +23161,7 @@ function pendentes() {
 return app.rascunhosPendentes();
 }
 
-function podeSair(rota, parametros) {
+function podeSair(rota, parametros, deEndereco) {
 if (aGuardar || aRecusar || !rotaAtual || rota === rotaAtual) return true;
 var porGravar = pendentes();
 if (!porGravar.length) return true;
@@ -22582,7 +23179,9 @@ aGuardar = false;
 if (confirmou) {
 
 porGravar.forEach(function (e) { app.registarRascunho(e, null); });
-app.navegar(rota, parametros);
+
+if (deEndereco) app.navegar(rota, parametros, true);
+else app.navegar(rota, parametros);
 return;
 }
 
@@ -22597,7 +23196,7 @@ return false;
 }
 app.encaminhar = function () {
 var alvo = app.lerHash();
-if (!podeSair(alvo.rota, alvo.parametros)) return Promise.resolve();
+if (!podeSair(alvo.rota, alvo.parametros, true)) return Promise.resolve();
 return app.mostrar(alvo.rota, alvo.parametros);
 };
 
